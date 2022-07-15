@@ -2,6 +2,8 @@
 <html>
   <head>
     
+    <link rel="stylesheet" href="./index.css" />
+
     <!--Polyfill for using import maps (in my case for firefox)-->
     <script async src="./es-module-shims.js"></script>
 
@@ -9,7 +11,8 @@
     <script type="importmap">
     {
       "imports": {
-        "@repcomm/exponent-ts": "./node_modules/@repcomm/exponent-ts/docs/mod.js"
+        "@repcomm/exponent-ts": "./node_modules/@repcomm/exponent-ts/docs/mod.js",
+        "ogl-typescript": "./node_modules/ogl-typescript/lib/index.js"
       }
     }
     </script>

@@ -2,6 +2,8 @@
 
 Recreation of minecraft in web for creating custom experiences
 
+![img](./example.png)
+
 ## Target Features
 - Minecraft 'feel' aka artwork and movement
 - TS/JS live modding with ES Modules

@@ -95,11 +95,13 @@ export class Chunk extends Mesh {
         size: 3,
         data: new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0])
       }
-    });
+    }); //TODO - figure out how to fix frustum so it can cull properly
+
     super(gl, {
       geometry: customGeometry,
-      frustumCulled: true,
-      program: Chunk.customProgram
+      frustumCulled: false,
+      program: Chunk.customProgram,
+      mode: gl.LINE_STRIP
     });
     this.customGeometry = customGeometry;
     this.blocksTexture = this.blocksTexture;
@@ -110,7 +112,7 @@ export class Chunk extends Mesh {
     setTimeout(() => {
       this.generate();
       this.rebuild();
-    }, 4000);
+    }, 500);
   }
 
   static positionToIndex(x, y, z) {

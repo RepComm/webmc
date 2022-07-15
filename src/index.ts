@@ -61,11 +61,10 @@ async function main() {
 
   const renderer = new Renderer();
   const gl = renderer.gl;
-  // container.mountChild(gl.canvas);
 
   const camera = new Camera(gl);
-  camera.position.z = 5;
-  camera.position.y = 2;
+  camera.position.z = Chunk.BLOCK_SIDE_LENGTH+5;
+  camera.position.y = 4;
 
   function resize() {
     renderer.setSize(container.rect.width, container.rect.height);
@@ -78,14 +77,18 @@ async function main() {
 
   const scene = new Transform();
 
+  const chunkParent = new Transform();
+  chunkParent.setParent(scene);
+
   const chunk = new Chunk(gl);
-  chunk.setParent(scene);
+  chunk.setParent(chunkParent);
+  chunk.position.set(-Chunk.BLOCK_SIDE_LENGTH/2);
 
   requestAnimationFrame(update);
   function update(t: number) {
     requestAnimationFrame(update);
 
-    chunk.rotation.y -= 0.01;
+    chunkParent.rotation.y += 0.005;
     // mesh.rotation.x += 0.01;
     renderer.render({ scene, camera });
   }

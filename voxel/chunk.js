@@ -1,57 +1,9 @@
-import { Geometry } from "ogl-typescript";
+import { Geometry, Mesh, Program, TextureLoader, Vec3 } from "ogl-typescript";
 import { MeshBuilder } from "../utils/meshbuilder.js";
 import { Block } from "./block.js";
-export class Chunk extends Geometry {
-  static getMeshBuilder() {
-    if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
-    return Chunk.chunkMeshBuilder;
-  }
-
-  constructor(gl, {
-    attributes = {}
-  } = {}) {
-    let mb = Chunk.getMeshBuilder();
-    mb.clear();
-    mb.cube(0, 0, 0, 1, 1, 1, {
-      back_ZN: true,
-      bottom_YN: true,
-      front_Z: true,
-      left_XN: true,
-      right_X: true,
-      top_Y: true
-    });
-    let data = mb.build();
-    Object.assign(attributes, {
-      position: {
-        size: 3,
-        data: data.vs
-        /*new Float32Array([
-        -1, -1, 0,
-        3, -1, 0,
-        -1, 3, 0
-        ])*/
-
-      },
-      uv: {
-        size: 2,
-        data: data.uvs
-        /*new Float32Array([
-        0, 0,
-        2, 0,
-        0, 2
-        ])*/
-
-      }
-    });
+export class CustomGeometry extends Geometry {
+  constructor(gl, attributes) {
     super(gl, attributes);
-    this.data = new Uint8Array(Chunk.DATA_SIZE);
-    this.renderBlock = new Block();
-    this.neighborBlock = new Block();
-    this.renderBlockSides = {};
-    setTimeout(() => {
-      this.generate();
-      this.rebuild();
-    }, 4000);
   }
 
   updateGeometry(gl, attributes) {
@@ -74,8 +26,101 @@ export class Chunk extends Geometry {
     }
   }
 
+}
+export class Chunk extends Mesh {
+  static getMeshBuilder() {
+    if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
+    return Chunk.chunkMeshBuilder;
+  }
+
+  constructor(gl) {
+    if (!Chunk.customProgram) {
+      const vertex =
+      /* glsl */
+      `
+        attribute vec2 uv;
+        attribute vec3 position;
+        attribute vec3 normal;
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
+        uniform mat3 normalMatrix;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+        `;
+      let fragment = `
+        precision highp float;
+        uniform sampler2D tMap;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        void main() {
+          vec3 normal = normalize(vNormal);
+          vec3 tex = texture2D(tMap, vUv).rgb;
+          
+          vec3 light = normalize(vec3(0.5, 1.0, -0.3));
+          float shading = dot(normal, light) * 0.15;
+          
+          gl_FragColor.rgb = tex + shading;
+          gl_FragColor.a = 1.0;
+        }`;
+      let blocksTexture = TextureLoader.load(gl, {
+        src: "./textures/top_grass.png"
+      });
+      Chunk.customProgram = new Program(gl, {
+        vertex,
+        fragment,
+        uniforms: {
+          tMap: {
+            value: blocksTexture
+          }
+        }
+      });
+    }
+
+    let customGeometry = new CustomGeometry(gl, {
+      position: {
+        size: 3,
+        data: new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0])
+      },
+      uv: {
+        size: 2,
+        data: new Float32Array([0, 0, 1, 0, 1, 1])
+      },
+      normal: {
+        size: 3,
+        data: new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0])
+      }
+    });
+    super(gl, {
+      geometry: customGeometry,
+      frustumCulled: true,
+      program: Chunk.customProgram
+    });
+    this.customGeometry = customGeometry;
+    this.blocksTexture = this.blocksTexture;
+    this.data = new Uint8Array(Chunk.DATA_SIZE);
+    this.renderBlock = new Block();
+    this.neighborBlock = new Block();
+    this.renderBlockSides = {};
+    setTimeout(() => {
+      this.generate();
+      this.rebuild();
+    }, 4000);
+  }
+
   static positionToIndex(x, y, z) {
     return Math.floor(x) + Math.floor(y) * Chunk.BLOCK_SIDE_LENGTH + Math.floor(z) * Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH;
+  }
+
+  static indexToPosition(index, out) {
+    out.z = index % Chunk.BLOCK_SIDE_LENGTH;
+    out.y = index / Chunk.BLOCK_SIDE_LENGTH % Chunk.BLOCK_SIDE_LENGTH;
+    out.x = index / (Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH);
   }
 
   static isPositionBounded(x, y, z) {
@@ -95,7 +140,11 @@ export class Chunk extends Geometry {
     if (!y || !z) {
       index = x;
     } else {
-      if (checkBounds && !Chunk.isPositionBounded(x, y, z)) return false;
+      if (checkBounds && !Chunk.isPositionBounded(x, y, z)) {
+        out.type = 0;
+        return false;
+      }
+
       index = Chunk.positionToIndex(x, y, z);
     }
 
@@ -104,8 +153,17 @@ export class Chunk extends Geometry {
   }
 
   generate() {
+    let position = new Vec3();
+    let origin = new Vec3(Chunk.BLOCK_SIDE_LENGTH / 2, Chunk.BLOCK_SIDE_LENGTH / 2, Chunk.BLOCK_SIDE_LENGTH / 2);
+
     for (let i = 0; i < this.data.byteLength; i++) {
-      this.data[i] = Math.random() > 0.5 ? 0 : Math.floor(Math.random() * 255);
+      Chunk.indexToPosition(i, position);
+
+      if (position.distance(origin) < Chunk.BLOCK_SIDE_LENGTH / 2) {
+        this.data[i] = 1;
+      } else {
+        this.data[i] = 0;
+      }
     }
   }
 
@@ -117,7 +175,13 @@ export class Chunk extends Geometry {
       for (let y = 0; y < Chunk.BLOCK_SIDE_LENGTH; y++) {
         for (let z = 0; z < Chunk.BLOCK_SIDE_LENGTH; z++) {
           this.getBlockData(this.renderBlock, x, y, z);
-          if (this.renderBlock.type === 0) continue; //check neighbors for transparency
+          if (this.renderBlock.type === 0) continue;
+          this.renderBlockSides.back_ZN = true;
+          this.renderBlockSides.front_Z = true;
+          this.renderBlockSides.left_XN = true;
+          this.renderBlockSides.right_X = true;
+          this.renderBlockSides.top_Y = true;
+          this.renderBlockSides.bottom_YN = true; //check neighbors for transparency
 
           if (this.getBlockData(this.neighborBlock, x, y + 1, z)) this.renderBlockSides.top_Y = this.neighborBlock.revealsNeighbors;
           if (this.getBlockData(this.neighborBlock, x, y - 1, z)) this.renderBlockSides.bottom_YN = this.neighborBlock.revealsNeighbors;
@@ -131,7 +195,7 @@ export class Chunk extends Geometry {
     }
 
     let data = mb.build();
-    this.updateGeometry(this.gl, {
+    this.customGeometry.updateGeometry(this.gl, {
       position: {
         size: 3,
         data: data.vs
@@ -139,6 +203,10 @@ export class Chunk extends Geometry {
       uv: {
         size: 2,
         data: data.uvs
+      },
+      normal: {
+        size: 3,
+        data: data.vs
       }
     });
   }

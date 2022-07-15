@@ -1,19 +1,29 @@
-# ts-map-babel-template
+# webmc
 
-A template setup for:
-- TypeScript ( using [babel](https://github.com/babel/babel) )
-- import maps ( including [this polyfill](https://github.com/guybedford/es-module-shims) )
-- And also optionally [show-casing exponent-ts](https://github.com/RepComm/exponent-ts)
+Recreation of minecraft in web for creating custom experiences
 
-## Function
+## Target Features
+- Minecraft 'feel' aka artwork and movement
+- TS/JS live modding with ES Modules
+- Custom music and sounds
 
-Compile /src directory with:
+## Installation
+`git clone https://github.com/RepComm/webmc`
+`cd ./webmc`
+`npm install`
+
+## Building
 `npm run build`
-<br/>
-File copy is set up as well for:
-`src/index.ts` -> `./index.js`<br/>
-`src/index.html` -> `./index.html`
 
-Output is in the same directory as package.json for sake of import maps
+Output is in top level directory, source is in /src subdirectory
 
-I regularly use this for starting new projects of my own, and therefor it should stay somewhat up-to-date.
+## Running
+
+Host from an http server such as npm serve
+`npm install serve -g`
+`serve`
+
+## Or the built in server for hosting games on your LAN over WebSockets
+TODO
+
+

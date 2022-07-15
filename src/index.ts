@@ -78,34 +78,14 @@ async function main() {
 
   const scene = new Transform();
 
-  const geometry = new Chunk(gl);
-
-  const program = new Program(gl, {
-    vertex: /* glsl */ `
-      attribute vec3 position;
-
-      uniform mat4 modelViewMatrix;
-      uniform mat4 projectionMatrix;
-
-      void main() {
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragment: /* glsl */ `
-      void main() {
-        gl_FragColor = vec4(1.0);
-      }
-    `,
-  });
-
-  const mesh = new Mesh(gl, { geometry, program });
-  mesh.setParent(scene);
+  const chunk = new Chunk(gl);
+  chunk.setParent(scene);
 
   requestAnimationFrame(update);
-  function update(t) {
+  function update(t: number) {
     requestAnimationFrame(update);
 
-    mesh.rotation.y -= 0.01;
+    chunk.rotation.y -= 0.01;
     // mesh.rotation.x += 0.01;
     renderer.render({ scene, camera });
   }

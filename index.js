@@ -1,7 +1,7 @@
 import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@repcomm/exponent-ts";
 import { AudioPlayer } from "./audio/audioplayer.js";
 import { MCBTN } from "./ui/mcbtn.js";
-import { Camera, Mesh, Program, Renderer, Transform } from "ogl-typescript";
+import { Camera, Renderer, Transform } from "ogl-typescript";
 import { Chunk } from "./voxel/chunk.js";
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
@@ -44,38 +44,13 @@ async function main() {
   window.addEventListener('resize', resize, false);
   resize();
   const scene = new Transform();
-  const geometry = new Chunk(gl);
-  const program = new Program(gl, {
-    vertex:
-    /* glsl */
-    `
-      attribute vec3 position;
-
-      uniform mat4 modelViewMatrix;
-      uniform mat4 projectionMatrix;
-
-      void main() {
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragment:
-    /* glsl */
-    `
-      void main() {
-        gl_FragColor = vec4(1.0);
-      }
-    `
-  });
-  const mesh = new Mesh(gl, {
-    geometry,
-    program
-  });
-  mesh.setParent(scene);
+  const chunk = new Chunk(gl);
+  chunk.setParent(scene);
   requestAnimationFrame(update);
 
   function update(t) {
     requestAnimationFrame(update);
-    mesh.rotation.y -= 0.01; // mesh.rotation.x += 0.01;
+    chunk.rotation.y -= 0.01; // mesh.rotation.x += 0.01;
 
     renderer.render({
       scene,

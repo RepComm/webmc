@@ -9,7 +9,7 @@ export class Block {
   }
   /**Like isTransparent but named for future proofing*/
   get revealsNeighbors(): boolean {
-    return this.type !== 0;
+    return this.type == 0;
   }
 }
 Block.DATA_SIZE = 1;

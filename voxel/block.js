@@ -4,7 +4,7 @@ export class Block {
 
 
   get revealsNeighbors() {
-    return this.type !== 0;
+    return this.type == 0;
   }
 
 }

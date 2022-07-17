@@ -63,6 +63,10 @@ export class Component {
     if (!this.isAttached) return null;
     return this.entity.getComponent(constructor);
   }
+  getOrCreateComponent(c: Function): Component {
+    if (!this.isAttached) return null;
+    return this.entity.getOrCreateComponent(c);
+  }
 }
 
 export type Components = Array<Component>;
@@ -184,5 +188,13 @@ export class Entity {
     for (let c of this.components) {
       if (c.onUpdate) c.onUpdate();
     }
+  }
+  getOrCreateComponent(c: Function): Component {
+    let result = this.getComponent(c);
+    if (!result) {
+      result = new c.prototype.constructor();
+      this.addComponent(result);
+    }
+    return result;
   }
 }

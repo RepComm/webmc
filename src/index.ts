@@ -6,9 +6,9 @@ import { AudioPlayer } from "./audio/audioplayer.js";
 import { Mesh } from "./components/mesh.js";
 import { WorldEntity } from "./entities/worldentity.js";
 import { MCBTN } from "./ui/mcbtn.js";
-import { Chunk } from "./entities/chunk.js";
 import { SceneGraph } from "./ui/scenegraph.js";
 import { Player } from "./components/player.js";
+import { Chunk } from "./components/chunk.js";
 
 
 EXPONENT_CSS_STYLES.mount(document.head);
@@ -120,9 +120,11 @@ async function main() {
   }
   createTestBox();
 
-  const chunk = new Chunk();
-  chunk.label = "Chunk";
-  chunk.setParent(chunkParent);
+  const chunk = new WorldEntity()
+  .setLabel("Chunk")
+  .setParent(chunkParent)
+  .addComponent(new Chunk());
+  
   chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
   const player = new WorldEntity()
@@ -131,13 +133,6 @@ async function main() {
     .setLabel("Player");
 
   sceneGraphDisplay.setRootNode(scene);
-  // scene.traverse((child, depth) => {
-  //   let cns = [];
-  //   for (let c of child.components) {
-  //     cns.push(c.constructor.name);
-  //   }
-  //   console.log(`Depth: ${depth}, Label: "${child.label}", Components: ${cns}`);
-  // });
 
   requestAnimationFrame(update);
   function update(t: number) {

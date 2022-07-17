@@ -88,14 +88,7 @@ async function main() {
   const chunk = new WorldEntity().setLabel("Chunk").setParent(chunkParent).addComponent(new Chunk());
   chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
   const player = new WorldEntity().addComponent(new Player()).setParent(scene).setLabel("Player");
-  sceneGraphDisplay.setRootNode(scene); // scene.traverse((child, depth) => {
-  //   let cns = [];
-  //   for (let c of child.components) {
-  //     cns.push(c.constructor.name);
-  //   }
-  //   console.log(`Depth: ${depth}, Label: "${child.label}", Components: ${cns}`);
-  // });
-
+  sceneGraphDisplay.setRootNode(scene);
   requestAnimationFrame(update);
 
   function update(t) {
@@ -110,7 +103,7 @@ async function main() {
 
   setInterval(() => {
     scene.onUpdate();
-  }, 1000 / 10);
+  }, Globals.delta);
 }
 
 main();

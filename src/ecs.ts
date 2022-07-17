@@ -59,11 +59,11 @@ export class Component {
    * this.getComponent(someInstance.constructor);
    * ```
    */
-  getComponent (constructor: Function|string): Component|null {
+  getComponent<T> (constructor: new ()=> T|string): T|null {
     if (!this.isAttached) return null;
     return this.entity.getComponent(constructor);
   }
-  getOrCreateComponent(c: Function): Component {
+  getOrCreateComponent<T>(c: new ()=> T): T {
     if (!this.isAttached) return null;
     return this.entity.getOrCreateComponent(c);
   }
@@ -141,15 +141,17 @@ export class Entity {
    * this.getComponent(someInstance.constructor);
    * ```
    */
-  getComponent (constructor: Function|string): Component|null {
+  getComponent <T> (constructor: new ()=> T|string): T|null {
     
     if (!this._components) return null;
     if (typeof (constructor) === "string") {
       for (let c of this.components) {
+        //@ts-expect-error
         if (c.constructor.name === constructor) return c;
       }
     } else {
       for (let c of this.components) {
+        //@ts-expect-error
         if (c.constructor === constructor) return c;
       }
     }
@@ -189,10 +191,11 @@ export class Entity {
       if (c.onUpdate) c.onUpdate();
     }
   }
-  getOrCreateComponent(c: Function): Component {
+  getOrCreateComponent<T>(c: new ()=> T): T {
     let result = this.getComponent(c);
     if (!result) {
       result = new c.prototype.constructor();
+      //@ts-expect-error
       this.addComponent(result);
     }
     return result;

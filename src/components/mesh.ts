@@ -47,7 +47,7 @@ function getDefaultProgram(): Program {
       `,
       fragment: /* glsl */ `
         void main() {
-            gl_FragColor = vec4(1.0);
+          gl_FragColor = vec4(1.0);
         }
       `,
     });
@@ -98,7 +98,7 @@ export class Mesh extends Component {
   }
   updateGeometry(gl: OGLRenderingContext, attributes: GeometryAttrs) {
     this._customGeometry.updateGeometry(gl, attributes);
-    console.log("updating geometry", attributes);
+    // console.log("updating geometry", attributes);
   }
   updateGeometryFromMeshBuilder (gl: OGLRenderingContext, mbr: MeshBuilderBuildResult) {
     this.updateGeometry(gl, {
@@ -112,13 +112,13 @@ export class Mesh extends Component {
       },
       normal: {
         size: 3,
-        data: mbr.ns
+        data: mbr.vs//ns //TODO - calculate normals properly
       }
     });
     
   }
   onAttach(): void {
-    let transform = this.getComponent(Transform.name) as Transform;
+    let transform = this.getComponent(Transform);
     this._oglMesh.setParent(transform._oglTransform);
   }
   onDetach(): void {

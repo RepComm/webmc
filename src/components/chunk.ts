@@ -1,5 +1,5 @@
 
-import { Vec3 } from "ogl-typescript";
+import { Program, TextureLoader, Vec3 } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js";
@@ -13,10 +13,10 @@ export class Chunk extends WorldComponent {
     if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
     return Chunk.chunkMeshBuilder;
   }
-  
+
   static BLOCK_SIDE_LENGTH: number;
   static DATA_SIZE: number;
-  
+
   mesh: Mesh;
 
   private data: Uint8Array;
@@ -24,7 +24,7 @@ export class Chunk extends WorldComponent {
   private neighborBlock: Block;
   private renderBlockSides: MeshBuilderCubeSides;
 
-  constructor () {
+  constructor() {
     super();
     this.data = new Uint8Array(Chunk.DATA_SIZE);
     this.renderBlock = new Block();
@@ -32,8 +32,49 @@ export class Chunk extends WorldComponent {
     this.renderBlockSides = {};
   }
   onAttach(): void {
-    this.mesh = this.getOrCreateComponent(Mesh) as Mesh;
-    
+    let blocksTexture = TextureLoader.load(Globals.gl, {
+      src: "./textures/top_grass.png"
+    });
+    console.log(blocksTexture);
+    let chunkMaterial = new Program(Globals.gl, {
+      vertex: `
+        attribute vec2 uv;
+        attribute vec3 position;
+        attribute vec3 normal;
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
+        uniform mat3 normalMatrix;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        void main() {
+          vUv = uv;
+          vNormal = normalize(normalMatrix * normal);
+          
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragment: `
+        precision highp float;
+        uniform sampler2D tMap;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        void main() {
+          vec3 normal = normalize(vNormal);
+          vec3 tex = texture2D(tMap, vUv).rgb;
+          
+          vec3 light = normalize(vec3(0.5, 1.0, -0.3));
+          float shading = dot(normal, light) * 0.15;
+          
+          gl_FragColor.rgb = tex + shading;
+          gl_FragColor.a = 1.0;
+        }`,
+      uniforms: {
+        tMap: { value: blocksTexture },
+      },
+    });
+    this.mesh = new Mesh(chunkMaterial);
+    this.entity.addComponent(this.mesh);
+    // this.mesh = this.getOrCreateComponent(Mesh);
+
     setTimeout(() => {
       this.generate();
       this.rebuild();

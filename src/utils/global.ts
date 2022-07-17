@@ -1,5 +1,9 @@
-import { OGLRenderingContext } from "ogl-typescript";
+import { OGLRenderingContext, Vec3 } from "ogl-typescript";
 
 export class Globals {
   static gl: OGLRenderingContext;
+  static delta: number;
+  static gravity: Vec3;
 }
+Globals.delta = 1000/20;
+Globals.gravity = new Vec3(0, -9.8, 0);

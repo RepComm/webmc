@@ -149,10 +149,12 @@ export class Entity {
 
     if (typeof constructor === "string") {
       for (let c of this.components) {
+        //@ts-expect-error
         if (c.constructor.name === constructor) return c;
       }
     } else {
       for (let c of this.components) {
+        //@ts-expect-error
         if (c.constructor === constructor) return c;
       }
     }
@@ -200,7 +202,8 @@ export class Entity {
     let result = this.getComponent(c);
 
     if (!result) {
-      result = new c.prototype.constructor();
+      result = new c.prototype.constructor(); //@ts-expect-error
+
       this.addComponent(result);
     }
 

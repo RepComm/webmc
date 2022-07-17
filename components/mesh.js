@@ -49,7 +49,7 @@ function getDefaultProgram() {
       /* glsl */
       `
         void main() {
-            gl_FragColor = vec4(1.0);
+          gl_FragColor = vec4(1.0);
         }
       `
     });
@@ -87,9 +87,8 @@ export class Mesh extends Component {
   }
 
   updateGeometry(gl, attributes) {
-    this._customGeometry.updateGeometry(gl, attributes);
+    this._customGeometry.updateGeometry(gl, attributes); // console.log("updating geometry", attributes);
 
-    console.log("updating geometry", attributes);
   }
 
   updateGeometryFromMeshBuilder(gl, mbr) {
@@ -104,13 +103,14 @@ export class Mesh extends Component {
       },
       normal: {
         size: 3,
-        data: mbr.ns
+        data: mbr.vs //ns
+
       }
     });
   }
 
   onAttach() {
-    let transform = this.getComponent(Transform.name);
+    let transform = this.getComponent(Transform);
 
     this._oglMesh.setParent(transform._oglTransform);
   }

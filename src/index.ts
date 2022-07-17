@@ -145,7 +145,7 @@ async function main() {
 
   setInterval(()=>{
     scene.onUpdate();
-  }, 1000/10);
+  }, Globals.delta);
 }
 
 main();

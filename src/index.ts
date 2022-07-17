@@ -1,10 +1,14 @@
 
 import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@repcomm/exponent-ts";
+import { Box, Camera, Program, Renderer, Transform as OGLTransform, Mesh as OGLMesh } from "ogl-typescript";
+import { Globals } from "./utils/global.js";
 import { AudioPlayer } from "./audio/audioplayer.js";
+import { Mesh } from "./components/mesh.js";
+import { Player } from "./entities/player.js";
+import { WorldEntity } from "./entities/worldentity.js";
 import { MCBTN } from "./ui/mcbtn.js";
+import { Chunk } from "./entities/chunk.js";
 
-import { Box, Camera, Mesh, Program, Renderer, Transform } from "ogl-typescript";
-import { Chunk } from "./voxel/chunk.js";
 
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
@@ -54,16 +58,15 @@ async function main() {
   btnPlay.on("click", () => {
     btns.unmount();
     container.mountChild(gl.canvas);
-
-    //TODO attach renderer
   });
 
 
   const renderer = new Renderer();
   const gl = renderer.gl;
+  Globals.gl = gl;
 
   const camera = new Camera(gl);
-  camera.position.z = Chunk.BLOCK_SIDE_LENGTH+5;
+  camera.position.z = Chunk.BLOCK_SIDE_LENGTH + 5;
   camera.position.y = 4;
 
   function resize() {
@@ -75,22 +78,69 @@ async function main() {
   window.addEventListener('resize', resize, false);
   resize();
 
-  const scene = new Transform();
+  const scene = new WorldEntity();
+  scene.label = "Scene";
 
-  const chunkParent = new Transform();
-  chunkParent.setParent(scene);
+  const chunkParent = new WorldEntity();
+  chunkParent.label = "Chunk Parent";
+  chunkParent.setParent(scene.transform);
 
-  const chunk = new Chunk(gl);
+  function createTestBox() {
+
+    const geometry = new Box(gl);
+
+    const program = new Program(gl, {
+      vertex:
+      `
+        attribute vec3 position;
+
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
+
+        void main() {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragment:
+      `
+        void main() {
+          gl_FragColor = vec4(1.0);
+        }
+      `,
+    });
+
+    const mesh = new OGLMesh(gl, { geometry, program });
+    mesh.setParent(chunkParent.transform);
+  }
+  createTestBox();
+
+
+  const chunk = new Chunk();
+  chunk.label = "Chunk";
   chunk.setParent(chunkParent);
-  chunk.position.set(-Chunk.BLOCK_SIDE_LENGTH/2);
+  // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
+
+  const player = new Player();
+  player.label = "Player";
+  player.setParent(chunkParent);
+  let playerModel = new Mesh();
+  player.addComponent(playerModel);
+
+  scene.traverse((child, depth) => {
+    let cns = [];
+    for (let c of child.components) {
+      cns.push(c.constructor.name);
+    }
+    console.log(`Depth: ${depth}, Label: "${child.label}", Components: ${cns}`);
+  });
 
   requestAnimationFrame(update);
   function update(t: number) {
     requestAnimationFrame(update);
 
-    chunkParent.rotation.y += 0.005;
+    chunkParent.transform.rotation.y += 0.005;
     // mesh.rotation.x += 0.01;
-    renderer.render({ scene, camera });
+    renderer.render({ scene: scene.transform, camera });
   }
 }
 

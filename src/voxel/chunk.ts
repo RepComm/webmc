@@ -1,11 +1,8 @@
-
+/*
 import { Attribute, Geometry, Mesh, OGLRenderingContext, Program, Texture, TextureLoader, Vec3 } from "ogl-typescript";
+import { GeometryAttrs } from "../components/mesh.js";
 import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "./block.js";
-
-export interface GeometryAttrs {
-  [key: string]: Partial<Attribute>;
-}
 
 export class CustomGeometry extends Geometry {
   constructor(gl: OGLRenderingContext, attributes: GeometryAttrs) {
@@ -124,7 +121,7 @@ export class Chunk extends Mesh {
       geometry: customGeometry,
       frustumCulled: false,
       program: Chunk.customProgram,
-      mode: gl.LINE_STRIP
+      // mode: gl.LINE_STRIP
     });
 
     this.customGeometry = customGeometry;
@@ -246,3 +243,4 @@ export class Chunk extends Mesh {
 
 Chunk.BLOCK_SIDE_LENGTH = 16;
 Chunk.DATA_SIZE = Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH * Block.DATA_SIZE;
+*/

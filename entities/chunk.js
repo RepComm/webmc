@@ -1,40 +1,13 @@
-import { Geometry, Mesh, Program, TextureLoader, Vec3 } from "ogl-typescript";
+import { Program, TextureLoader, Vec3 } from "ogl-typescript";
+import { Mesh } from "../components/mesh.js";
+import { Globals } from "../utils/global.js";
 import { MeshBuilder } from "../utils/meshbuilder.js";
-import { Block } from "./block.js";
-export class CustomGeometry extends Geometry {
-  constructor(gl, attributes) {
-    super(gl, attributes);
-  }
-
-  updateGeometry(gl, attributes) {
-    this.attributes = attributes; // Store one VAO per program attribute locations order
-
-    this.VAOs = {};
-    this.drawRange = {
-      start: 0,
-      count: 0
-    };
-    this.instancedCount = 0; // Unbind current VAO so that new buffers don't get added to active mesh
-
-    this.gl.renderer.bindVertexArray(null);
-    this.gl.renderer.currentGeometry = null; // Alias for state store to avoid redundant calls for global state
-
-    this.glState = this.gl.renderer.state; // create the buffers
-
-    for (let key in attributes) {
-      this.addAttribute(key, attributes[key]);
-    }
-  }
-
-}
-export class Chunk extends Mesh {
-  static getMeshBuilder() {
-    if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
-    return Chunk.chunkMeshBuilder;
-  }
-
-  constructor(gl) {
-    if (!Chunk.customProgram) {
+import { Block } from "../voxel/block.js";
+import { WorldEntity } from "./worldentity.js";
+export class Chunk extends WorldEntity {
+  static get renderProgram() {
+    if (!Chunk.CHUNK_RENDER_PROGRAM) {
+      console.log(Globals.gl);
       const vertex =
       /* glsl */
       `
@@ -68,10 +41,10 @@ export class Chunk extends Mesh {
           gl_FragColor.rgb = tex + shading;
           gl_FragColor.a = 1.0;
         }`;
-      let blocksTexture = TextureLoader.load(gl, {
+      let blocksTexture = TextureLoader.load(Globals.gl, {
         src: "./textures/top_grass.png"
       });
-      Chunk.customProgram = new Program(gl, {
+      Chunk.CHUNK_RENDER_PROGRAM = new Program(Globals.gl, {
         vertex,
         fragment,
         uniforms: {
@@ -82,29 +55,19 @@ export class Chunk extends Mesh {
       });
     }
 
-    let customGeometry = new CustomGeometry(gl, {
-      position: {
-        size: 3,
-        data: new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0])
-      },
-      uv: {
-        size: 2,
-        data: new Float32Array([0, 0, 1, 0, 1, 1])
-      },
-      normal: {
-        size: 3,
-        data: new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0])
-      }
-    }); //TODO - figure out how to fix frustum so it can cull properly
+    return Chunk.CHUNK_RENDER_PROGRAM;
+  }
 
-    super(gl, {
-      geometry: customGeometry,
-      frustumCulled: false,
-      program: Chunk.customProgram // mode: gl.LINE_STRIP
+  static getMeshBuilder() {
+    if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
+    return Chunk.chunkMeshBuilder;
+  }
 
-    });
-    this.customGeometry = customGeometry;
-    this.blocksTexture = this.blocksTexture;
+  constructor() {
+    super();
+    this.isChunk = true;
+    this.mesh = new Mesh();
+    this.addComponent(this.mesh);
     this.data = new Uint8Array(Chunk.DATA_SIZE);
     this.renderBlock = new Block();
     this.neighborBlock = new Block();
@@ -197,7 +160,7 @@ export class Chunk extends Mesh {
     }
 
     let data = mb.build();
-    this.customGeometry.updateGeometry(this.gl, {
+    this.mesh.updateGeometry(Globals.gl, {
       position: {
         size: 3,
         data: data.vs
@@ -208,7 +171,7 @@ export class Chunk extends Mesh {
       },
       normal: {
         size: 3,
-        data: data.vs
+        data: data.ns
       }
     });
   }

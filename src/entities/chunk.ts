@@ -1,43 +1,19 @@
-import { Geometry, Mesh, Program, TextureLoader, Vec3 } from "ogl-typescript";
-import { MeshBuilder } from "../utils/meshbuilder.js";
-import { Block } from "./block.js";
-export class CustomGeometry extends Geometry {
-  constructor(gl, attributes) {
-    super(gl, attributes);
-  }
 
-  updateGeometry(gl, attributes) {
-    this.attributes = attributes; // Store one VAO per program attribute locations order
+import { Program, TextureLoader, Vec3 } from "ogl-typescript";
+import { Mesh } from "../components/mesh.js";
+import { Globals } from "../utils/global.js";
+import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
+import { Block } from "../voxel/block.js";
+import { WorldEntity } from "./worldentity.js";
 
-    this.VAOs = {};
-    this.drawRange = {
-      start: 0,
-      count: 0
-    };
-    this.instancedCount = 0; // Unbind current VAO so that new buffers don't get added to active mesh
+export class Chunk extends WorldEntity {
+  static CHUNK_RENDER_PROGRAM: Program;
+  
+  static get renderProgram (): Program {
+    if (!Chunk.CHUNK_RENDER_PROGRAM) {
+      console.log(Globals.gl);
 
-    this.gl.renderer.bindVertexArray(null);
-    this.gl.renderer.currentGeometry = null; // Alias for state store to avoid redundant calls for global state
-
-    this.glState = this.gl.renderer.state; // create the buffers
-
-    for (let key in attributes) {
-      this.addAttribute(key, attributes[key]);
-    }
-  }
-
-}
-export class Chunk extends Mesh {
-  static getMeshBuilder() {
-    if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
-    return Chunk.chunkMeshBuilder;
-  }
-
-  constructor(gl) {
-    if (!Chunk.customProgram) {
-      const vertex =
-      /* glsl */
-      `
+      const vertex = /* glsl */ `
         attribute vec2 uv;
         attribute vec3 position;
         attribute vec3 normal;
@@ -68,65 +44,79 @@ export class Chunk extends Mesh {
           gl_FragColor.rgb = tex + shading;
           gl_FragColor.a = 1.0;
         }`;
-      let blocksTexture = TextureLoader.load(gl, {
+      let blocksTexture = TextureLoader.load(Globals.gl, {
         src: "./textures/top_grass.png"
       });
-      Chunk.customProgram = new Program(gl, {
+      Chunk.CHUNK_RENDER_PROGRAM = new Program(Globals.gl, {
         vertex,
         fragment,
         uniforms: {
-          tMap: {
-            value: blocksTexture
-          }
-        }
+          tMap: { value: blocksTexture },
+        },
       });
     }
+    return Chunk.CHUNK_RENDER_PROGRAM;
+  }
 
-    let customGeometry = new CustomGeometry(gl, {
-      position: {
-        size: 3,
-        data: new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0])
-      },
-      uv: {
-        size: 2,
-        data: new Float32Array([0, 0, 1, 0, 1, 1])
-      },
-      normal: {
-        size: 3,
-        data: new Float32Array([0, 0, 0, 0, 1, 0, 1, 1, 0])
-      }
-    }); //TODO - figure out how to fix frustum so it can cull properly
+  private static chunkMeshBuilder: MeshBuilder;
+  static getMeshBuilder(): MeshBuilder {
+    if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
+    return Chunk.chunkMeshBuilder;
+  }
 
-    super(gl, {
-      geometry: customGeometry,
-      frustumCulled: false,
-      program: Chunk.customProgram // mode: gl.LINE_STRIP
+  
+  static BLOCK_SIDE_LENGTH: number;
+  static DATA_SIZE: number;
+  
+  mesh: Mesh;
 
-    });
-    this.customGeometry = customGeometry;
-    this.blocksTexture = this.blocksTexture;
+  private data: Uint8Array;
+  private renderBlock: Block;
+  private neighborBlock: Block;
+  private renderBlockSides: MeshBuilderCubeSides;
+
+  private isChunk: boolean;
+
+  constructor () {
+    super();
+    this.isChunk = true;
+
+    this.mesh = new Mesh();
+    this.addComponent(this.mesh);
+
     this.data = new Uint8Array(Chunk.DATA_SIZE);
     this.renderBlock = new Block();
     this.neighborBlock = new Block();
+
     this.renderBlockSides = {};
+
+
     setTimeout(() => {
       this.generate();
       this.rebuild();
+
+
     }, 500);
   }
 
-  static positionToIndex(x, y, z) {
-    return Math.floor(x) + Math.floor(y) * Chunk.BLOCK_SIDE_LENGTH + Math.floor(z) * Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH;
+  static positionToIndex(x: number, y: number, z: number): number {
+    return (
+      Math.floor(x) +
+      Math.floor(y) * Chunk.BLOCK_SIDE_LENGTH +
+      Math.floor(z) * Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH
+    );
   }
-
-  static indexToPosition(index, out) {
+  static indexToPosition(index: number, out: Vec3) {
     out.z = index % Chunk.BLOCK_SIDE_LENGTH;
-    out.y = index / Chunk.BLOCK_SIDE_LENGTH % Chunk.BLOCK_SIDE_LENGTH;
+    out.y = (index / Chunk.BLOCK_SIDE_LENGTH) % Chunk.BLOCK_SIDE_LENGTH;
     out.x = index / (Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH);
   }
-
-  static isPositionBounded(x, y, z) {
-    return x > -1 && x < Chunk.BLOCK_SIDE_LENGTH && y > -1 && y < Chunk.BLOCK_SIDE_LENGTH && z > -1 && z < Chunk.BLOCK_SIDE_LENGTH;
+  static isPositionBounded(x: number, y: number, z: number): boolean {
+    return (
+      x > -1 && x < Chunk.BLOCK_SIDE_LENGTH &&
+      y > -1 && y < Chunk.BLOCK_SIDE_LENGTH &&
+      z > -1 && z < Chunk.BLOCK_SIDE_LENGTH
+    );
   }
   /**Get a block's data from is position
    * Outputs to supplied block 'out'
@@ -134,11 +124,8 @@ export class Chunk extends Mesh {
    * If checkBounds is true, x y z check fit within chunk coords and return false if out of bounds
    * otherwise always returns true
    */
-
-
-  getBlockData(out, x, y, z, checkBounds = true) {
+  getBlockData(out: Block, x: number, y?: number, z?: number, checkBounds: boolean = true): boolean {
     let index = 0;
-
     if (!y || !z) {
       index = x;
     } else {
@@ -146,29 +133,25 @@ export class Chunk extends Mesh {
         out.type = 0;
         return false;
       }
-
       index = Chunk.positionToIndex(x, y, z);
     }
-
     out.type = this.data[index];
     return true;
   }
-
   generate() {
     let position = new Vec3();
     let origin = new Vec3(Chunk.BLOCK_SIDE_LENGTH / 2, Chunk.BLOCK_SIDE_LENGTH / 2, Chunk.BLOCK_SIDE_LENGTH / 2);
 
     for (let i = 0; i < this.data.byteLength; i++) {
       Chunk.indexToPosition(i, position);
-
       if (position.distance(origin) < Chunk.BLOCK_SIDE_LENGTH / 2) {
         this.data[i] = 1;
       } else {
         this.data[i] = 0;
       }
+
     }
   }
-
   rebuild() {
     let mb = Chunk.getMeshBuilder();
     mb.clear();
@@ -183,21 +166,25 @@ export class Chunk extends Mesh {
           this.renderBlockSides.left_XN = true;
           this.renderBlockSides.right_X = true;
           this.renderBlockSides.top_Y = true;
-          this.renderBlockSides.bottom_YN = true; //check neighbors for transparency
+          this.renderBlockSides.bottom_YN = true;
 
+          //check neighbors for transparency
           if (this.getBlockData(this.neighborBlock, x, y + 1, z)) this.renderBlockSides.top_Y = this.neighborBlock.revealsNeighbors;
           if (this.getBlockData(this.neighborBlock, x, y - 1, z)) this.renderBlockSides.bottom_YN = this.neighborBlock.revealsNeighbors;
           if (this.getBlockData(this.neighborBlock, x, y, z - 1)) this.renderBlockSides.back_ZN = this.neighborBlock.revealsNeighbors;
           if (this.getBlockData(this.neighborBlock, x, y, z + 1)) this.renderBlockSides.front_Z = this.neighborBlock.revealsNeighbors;
           if (this.getBlockData(this.neighborBlock, x - 1, y, z)) this.renderBlockSides.left_XN = this.neighborBlock.revealsNeighbors;
           if (this.getBlockData(this.neighborBlock, x + 1, y, z)) this.renderBlockSides.right_X = this.neighborBlock.revealsNeighbors;
+
           mb.cube(x, y, z, 1, 1, 1, this.renderBlockSides);
+
         }
       }
     }
 
     let data = mb.build();
-    this.customGeometry.updateGeometry(this.gl, {
+
+    this.mesh.updateGeometry(Globals.gl, {
       position: {
         size: 3,
         data: data.vs
@@ -208,11 +195,11 @@ export class Chunk extends Mesh {
       },
       normal: {
         size: 3,
-        data: data.vs
+        data: data.ns
       }
     });
   }
-
 }
+
 Chunk.BLOCK_SIDE_LENGTH = 16;
 Chunk.DATA_SIZE = Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH * Chunk.BLOCK_SIDE_LENGTH * Block.DATA_SIZE;

@@ -1,7 +1,9 @@
+import type { Vec2, Vec3 } from "ogl-typescript";
 
 export interface MeshBuilderBuildResult {
   vs: Float32Array;
   uvs: Float32Array;
+  ns: Float32Array;
 }
 
 export interface MeshBuilderCubeSides {
@@ -40,19 +42,30 @@ export const MeshBuilderCubeSidesALL: MeshBuilderCubeSides = {
 export class MeshBuilder {
   private vs: Array<number>;
   private uvs: Array<number>;
+  private ns: Array<number>;
 
   constructor() {
     this.vs = new Array();
     this.uvs = new Array();
+    this.ns = new Array();
   }
   clear(): this {
     this.vs.length = 0;
     this.uvs.length = 0;
     return this;
   }
-  point(x: number, y: number, z: number = 0, u: number = x, v: number = y): this {
+  point(
+    x: number, y: number, z: number = 0,
+    u: number = x, v: number = y,
+    nx: number = 0, ny: number = 0, nz: number = 0
+  ): this {
     this.vs.push(x, y, z);
     this.uvs.push(u, v);
+    this.ns.push(nx, ny, nz);
+    return this;
+  }
+  oop_point (pos: Vec3, uv?: Vec2, normal?: Vec3): this {
+    this.point(pos.x, pos.y, pos.z, uv.x, uv.y, normal.x, normal.y, normal.z);
     return this;
   }
   validate(): this {
@@ -67,7 +80,10 @@ export class MeshBuilder {
     cx: number, cy: number, cz: number,
     au?: number, av?: number,
     bu?: number, bv?: number,
-    cu?: number, cv?: number
+    cu?: number, cv?: number,
+    nax?: number, nay?: number, naz?: number,
+    nbx?: number, nby?: number, nbz?: number,
+    ncx?: number, ncy?: number, ncz?: number
   ) {
     this.vs.push(
       ax, ay, az,
@@ -80,6 +96,30 @@ export class MeshBuilder {
       bu || 1, bv || 0,
       cu || 0, cv || 1
     );
+
+    this.ns.push(
+      nax||0, nay||0, naz||0,
+      nbx||0, nby||0, nbz||0,
+      ncx||0, ncy||0, ncz||0,
+    );
+  }
+  oop_tri (
+    a: Vec3, b: Vec3, c: Vec3,
+    auv?: Vec2, buv?: Vec2, cuv?: Vec2,
+    an?: Vec3, bn?: Vec3, cn?: Vec3
+  ) {
+    this.tri(
+      a.x, a.y, a.z,
+      b.x, b.y, b.z,
+      c.x, c.y, c.z,
+      auv.x, auv.y,
+      buv.x, buv.y,
+      cuv.x, cuv.y,
+      an.x, an.y, an.z,
+      bn.x, bn.y, bn.z,
+      cn.x, cn.y, cn.z
+    );
+    return this;
   }
   /**
    * 0,0    1,0
@@ -98,7 +138,12 @@ export class MeshBuilder {
     au?: number, av?: number,
     bu?: number, bv?: number,
     cu?: number, cv?: number,
-    du?: number, dv?: number
+    du?: number, dv?: number,
+
+    nax?:number, nay?: number, naz?: number,
+    nbx?: number, nby?: number, nbz?: number,
+    ncx?: number, ncy?: number, ncz?: number,
+    ndx?: number, ndy?: number, ndz?: number
   ) {
     this.tri(
       ax, ay, az,
@@ -107,7 +152,11 @@ export class MeshBuilder {
 
       au || 0, av || 0,
       bu || 1, bv || 0,
-      cu || 1, cv || 0
+      cu || 1, cv || 0,
+
+      nax, nay, naz,
+      nbx, nby, nbz,
+      ncx, ncy, ncz
     );
     this.tri(
       bx, by, bz,
@@ -116,7 +165,32 @@ export class MeshBuilder {
 
       bu || 1, bv || 0,
       du || 1, dv || 1,
-      cu || 1, cv || 0
+      cu || 1, cv || 0,
+
+      nbx, nby, nbz,
+      ndx, ndy, ndz,
+      ncx, ncy, ncz
+
+    );
+  }
+  oop_quad (
+    a: Vec3, b: Vec3, c: Vec3, d: Vec3,
+    auv?: Vec2, buv?: Vec2, cuv?: Vec2, duv?: Vec2,
+    an?: Vec3, bn?: Vec3, cn?: Vec3, dn?: Vec3
+  ) {
+    this.quad(
+      a.x, a.y, a.z,
+      b.x, b.y, b.z,
+      c.x, c.y, c.z,
+      d.x, d.y, d.z,
+      auv.x, auv.y,
+      buv.x, buv.y,
+      cuv.x, cuv.y,
+      duv.x, duv.y,
+      an.x, an.y, an.z,
+      bn.x, bn.y, bn.z,
+      cn.x, cn.y, cn.z,
+      dn.x, dn.y, dn.z
     );
   }
   cube(
@@ -196,7 +270,8 @@ export class MeshBuilder {
 
     return {
       vs: new Float32Array(this.vs),
-      uvs: new Float32Array(this.uvs)
+      uvs: new Float32Array(this.uvs),
+      ns: new Float32Array(this.ns)
     };
   }
 }

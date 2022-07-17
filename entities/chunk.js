@@ -160,20 +160,7 @@ export class Chunk extends WorldEntity {
     }
 
     let data = mb.build();
-    this.mesh.updateGeometry(Globals.gl, {
-      position: {
-        size: 3,
-        data: data.vs
-      },
-      uv: {
-        size: 2,
-        data: data.uvs
-      },
-      normal: {
-        size: 3,
-        data: data.ns
-      }
-    });
+    this.mesh.updateGeometryFromMeshBuilder(Globals.gl, data);
   }
 
 }

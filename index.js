@@ -2,12 +2,11 @@ import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@rep
 import { Box, Camera, Program, Renderer, Mesh as OGLMesh } from "ogl-typescript";
 import { Globals } from "./utils/global.js";
 import { AudioPlayer } from "./audio/audioplayer.js";
-import { Mesh } from "./components/mesh.js";
-import { Player } from "./entities/player.js";
 import { WorldEntity } from "./entities/worldentity.js";
 import { MCBTN } from "./ui/mcbtn.js";
 import { Chunk } from "./entities/chunk.js";
 import { SceneGraph } from "./ui/scenegraph.js";
+import { Player } from "./components/player.js";
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
 
@@ -90,11 +89,7 @@ async function main() {
   chunk.label = "Chunk";
   chunk.setParent(chunkParent);
   chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
-  const player = new Player();
-  player.label = "Player";
-  player.setParent(chunkParent);
-  let playerModel = new Mesh();
-  player.addComponent(playerModel);
+  const player = new WorldEntity().addComponent(new Player()).setParent(scene).setLabel("Player");
   sceneGraphDisplay.setRootNode(scene); // scene.traverse((child, depth) => {
   //   let cns = [];
   //   for (let c of child.components) {
@@ -114,6 +109,10 @@ async function main() {
       camera
     });
   }
+
+  setInterval(() => {
+    scene.onUpdate();
+  }, 1000 / 10);
 }
 
 main();

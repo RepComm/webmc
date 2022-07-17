@@ -7,20 +7,29 @@ export interface WorldEntityTraverse {
 }
 
 export class WorldEntity extends Entity {
+  /**A helpful label/name, not usually rendered by anything*/
   label: string;
+  /**Each WorldEntity has a transform component, this is a convenient accessor to it*/
   transform: Transform;
-  isWorldEntity: boolean;
-
+  
+  /**
+   * Get the parent WorldEntity (if any, note: this does not include raw ogl Transforms)
+   */
   get parent(): WorldEntity {
-    return this.transform.getParent().entity;
+    let p = this.transform.getParent();
+    if (p) return p.entity;
+    return null;
   }
   constructor(label?: string) {
     super();
-    this.label = label||"unlabelled";
+    this.setLabel(label);
 
-    this.isWorldEntity = true;
     this.transform = new Transform();
     this.addComponent(this.transform);
+  }
+  setLabel (label?: string): this {
+    this.label = label || "unlabelled";
+    return this;
   }
   setParent(t: Transform | WorldEntity): this {
     if (t instanceof WorldEntity) {
@@ -30,6 +39,9 @@ export class WorldEntity extends Entity {
     }
     return this;
   }
+  /**
+   * Get immediate WorldEntity children (does not include raw ogl Transforms)
+   */
   getChildren(): Array<WorldEntity> | null {
     let result: Array<WorldEntity> = [];
     let component: Transform;
@@ -40,6 +52,11 @@ export class WorldEntity extends Entity {
     }
     return result || null;
   }
+  /**
+   * Walk thru the scenegraph of WorldEntitys
+   * 
+   * Does not include raw ogl transforms
+   */
   traverse(cb: WorldEntityTraverse, depth: number = 0, maxDepth: number = 10) {
     cb(this, depth);
 
@@ -48,5 +65,15 @@ export class WorldEntity extends Entity {
       // cb(child+1, depth);
       child.traverse(cb, depth+1, maxDepth);
     }
+  }
+  onUpdate () {
+    super.onUpdate();
+    let component: Transform;
+
+    for (let child of this.transform.children) {
+      component = child[ESC_COMPONENT_NAMESPACE];
+      if (component && component.entity) component.entity.onUpdate();
+    }
+
   }
 }

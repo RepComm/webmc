@@ -1,18 +1,63 @@
+/**
+ * Base class for all components attached to entities
+ * 
+ */
 export class Component {
+  /**
+   * Get the entity this component is attached to
+   */
   get entity() {
     return this._entity;
   }
+  /**
+   * Detect if component is attached to an entity
+   * Realistically, your code should not be running when this is false
+   */
+
 
   get isAttached() {
     return this._entity !== undefined && this._entity !== null;
   }
+  /**
+   * make sure to call super() in your subclass
+   */
+
 
   constructor() {}
+  /**
+   * Get notified when the component is attached to an entity
+   * This happens right after attachment, so this.entity is valid
+   */
+
 
   onAttach() {}
+  /**
+   * Get notified when the component is detached from an entity
+   * This happens right before detachment, so this.entity is still valid
+   */
+
 
   onDetach() {}
 
+  /**
+   * Get a sibling component given the constructor of the component or its name
+   * 
+   * Ex:
+   * ```ts
+   * import {Transform} from "./components/transform.js";
+   * //...
+   * this.getComponent(Transform.name);
+   * 
+   * //or
+   * this.getComponent("Transform");
+   * 
+   * //or
+   * this.getComponent(Transform);
+   * 
+   * //or given an instance of the object
+   * this.getComponent(someInstance.constructor);
+   * ```
+   */
   getComponent(constructor) {
     if (!this.isAttached) return null;
     return this.entity.getComponent(constructor);
@@ -73,6 +118,26 @@ export class Entity {
 
     return result || null;
   }
+  /**
+   * Get a sibling component given the constructor of the component or its name
+   * 
+   * Ex:
+   * ```ts
+   * import {Transform} from "./components/transform.js";
+   * //...
+   * this.getComponent(Transform.name);
+   * 
+   * //or
+   * this.getComponent("Transform");
+   * 
+   * //or
+   * this.getComponent(Transform);
+   * 
+   * //or given an instance of the object
+   * this.getComponent(someInstance.constructor);
+   * ```
+   */
+
 
   getComponent(constructor) {
     if (!this._components) return null;
@@ -116,6 +181,14 @@ export class Entity {
 
   onComponentBeforeRemove(c) {
     return true;
+  }
+
+  onUpdate() {
+    if (!this._components) return;
+
+    for (let c of this.components) {
+      if (c.onUpdate) c.onUpdate();
+    }
   }
 
 }

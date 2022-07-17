@@ -4,11 +4,11 @@ import { Box, Camera, Program, Renderer, Transform as OGLTransform, Mesh as OGLM
 import { Globals } from "./utils/global.js";
 import { AudioPlayer } from "./audio/audioplayer.js";
 import { Mesh } from "./components/mesh.js";
-import { Player } from "./entities/player.js";
 import { WorldEntity } from "./entities/worldentity.js";
 import { MCBTN } from "./ui/mcbtn.js";
 import { Chunk } from "./entities/chunk.js";
 import { SceneGraph } from "./ui/scenegraph.js";
+import { Player } from "./components/player.js";
 
 
 EXPONENT_CSS_STYLES.mount(document.head);
@@ -125,11 +125,10 @@ async function main() {
   chunk.setParent(chunkParent);
   chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
-  const player = new Player();
-  player.label = "Player";
-  player.setParent(chunkParent);
-  let playerModel = new Mesh();
-  player.addComponent(playerModel);
+  const player = new WorldEntity()
+    .addComponent(new Player())
+    .setParent(scene)
+    .setLabel("Player");
 
   sceneGraphDisplay.setRootNode(scene);
   // scene.traverse((child, depth) => {
@@ -148,6 +147,10 @@ async function main() {
     // mesh.rotation.x += 0.01;
     renderer.render({ scene: scene.transform, camera });
   }
+
+  setInterval(()=>{
+    scene.onUpdate();
+  }, 1000/10);
 }
 
 main();

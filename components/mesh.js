@@ -92,6 +92,23 @@ export class Mesh extends Component {
     console.log("updating geometry", attributes);
   }
 
+  updateGeometryFromMeshBuilder(gl, mbr) {
+    this.updateGeometry(gl, {
+      position: {
+        size: 3,
+        data: mbr.vs
+      },
+      uv: {
+        size: 2,
+        data: mbr.uvs
+      },
+      normal: {
+        size: 3,
+        data: mbr.ns
+      }
+    });
+  }
+
   onAttach() {
     let transform = this.getComponent(Transform.name);
 

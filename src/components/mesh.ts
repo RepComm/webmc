@@ -2,6 +2,7 @@
 import { Attribute, Geometry, OGLRenderingContext, Mesh as OGLMesh, Program } from "ogl-typescript";
 import { Component } from "../ecs.js";
 import { Globals } from "../utils/global.js";
+import { MeshBuilder, MeshBuilderBuildResult } from "../utils/meshbuilder.js";
 import { Transform } from "./transform.js";
 
 export interface GeometryAttrs {
@@ -98,6 +99,23 @@ export class Mesh extends Component {
   updateGeometry(gl: OGLRenderingContext, attributes: GeometryAttrs) {
     this._customGeometry.updateGeometry(gl, attributes);
     console.log("updating geometry", attributes);
+  }
+  updateGeometryFromMeshBuilder (gl: OGLRenderingContext, mbr: MeshBuilderBuildResult) {
+    this.updateGeometry(gl, {
+      position: {
+        size: 3,
+        data: mbr.vs
+      },
+      uv: {
+        size: 2,
+        data: mbr.uvs
+      },
+      normal: {
+        size: 3,
+        data: mbr.ns
+      }
+    });
+    
   }
   onAttach(): void {
     let transform = this.getComponent(Transform.name) as Transform;

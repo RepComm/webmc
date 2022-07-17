@@ -5,7 +5,7 @@ body {
 }
 
 #container {
-  flex-direction: column;
+  flex-direction: row;
 }
 
 #title {
@@ -48,4 +48,27 @@ body {
   flex-direction: column;
   max-width: 50%;
   padding-left: 25%;
+}
+
+.scenegraph {
+	flex-direction: column;
+	background-color: #1f1e1ea4;
+	position:absolute;
+	left: 1em;
+	top: 1em;
+}
+.scenegraph > :nth-child(2n+1) {
+	background-color: #292929d2;
+}
+.scenegraph-node {
+	max-height: 2em;
+	padding: 0.25em;
+	border-radius: 0.25em;
+	flex-direction: column;
+}
+.scenegraph-node-label {
+	max-height: 1em;
+}
+.scenegraph-node-components {
+	color: #8acdec !important;
 }

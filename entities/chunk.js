@@ -42,7 +42,7 @@ export class Chunk extends WorldEntity {
           gl_FragColor.a = 1.0;
         }`;
       let blocksTexture = TextureLoader.load(Globals.gl, {
-        src: "./textures/top_grass.png"
+        src: "../textures/top_grass.png"
       });
       Chunk.CHUNK_RENDER_PROGRAM = new Program(Globals.gl, {
         vertex,

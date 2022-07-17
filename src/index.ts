@@ -8,6 +8,7 @@ import { Player } from "./entities/player.js";
 import { WorldEntity } from "./entities/worldentity.js";
 import { MCBTN } from "./ui/mcbtn.js";
 import { Chunk } from "./entities/chunk.js";
+import { SceneGraph } from "./ui/scenegraph.js";
 
 
 EXPONENT_CSS_STYLES.mount(document.head);
@@ -57,17 +58,22 @@ async function main() {
 
   btnPlay.on("click", () => {
     btns.unmount();
+    container.mountChild(sceneGraphDisplay);
     container.mountChild(gl.canvas);
   });
 
+  const sceneGraphDisplay = new SceneGraph();
+  // .mount(container);
 
   const renderer = new Renderer();
   const gl = renderer.gl;
+  gl.canvas.style["max-width"] = "100%";
+  gl.canvas.style["max-height"] = "100%";
   Globals.gl = gl;
 
   const camera = new Camera(gl);
   camera.position.z = Chunk.BLOCK_SIDE_LENGTH + 5;
-  camera.position.y = 4;
+  camera.position.y = 2;
 
   function resize() {
     renderer.setSize(container.rect.width, container.rect.height);
@@ -114,11 +120,10 @@ async function main() {
   }
   createTestBox();
 
-
   const chunk = new Chunk();
   chunk.label = "Chunk";
   chunk.setParent(chunkParent);
-  // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
+  chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
   const player = new Player();
   player.label = "Player";
@@ -126,13 +131,14 @@ async function main() {
   let playerModel = new Mesh();
   player.addComponent(playerModel);
 
-  scene.traverse((child, depth) => {
-    let cns = [];
-    for (let c of child.components) {
-      cns.push(c.constructor.name);
-    }
-    console.log(`Depth: ${depth}, Label: "${child.label}", Components: ${cns}`);
-  });
+  sceneGraphDisplay.setRootNode(scene);
+  // scene.traverse((child, depth) => {
+  //   let cns = [];
+  //   for (let c of child.components) {
+  //     cns.push(c.constructor.name);
+  //   }
+  //   console.log(`Depth: ${depth}, Label: "${child.label}", Components: ${cns}`);
+  // });
 
   requestAnimationFrame(update);
   function update(t: number) {

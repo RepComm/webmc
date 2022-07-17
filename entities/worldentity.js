@@ -36,10 +36,11 @@ export class WorldEntity extends Entity {
   }
 
   traverse(cb, depth = 0, maxDepth = 10) {
+    cb(this, depth);
     let children = this.getChildren();
 
     for (let child of children) {
-      cb(child, depth);
+      // cb(child+1, depth);
       child.traverse(cb, depth + 1, maxDepth);
     }
   }

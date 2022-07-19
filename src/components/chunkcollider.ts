@@ -61,10 +61,11 @@ export class ChunkCollider extends WorldComponent {
           //update for next time
           t.lastCenter.copy(t.center);
 
+          let hw = 2;
           //perform block collider generation if required
-          for (let x=-1; x<2; x++) {
-            for (let y=-1; y<2; y++) {
-              for (let z=-1; z<2; z++) {
+          for (let x=-hw; x<hw+1; x++) {
+            for (let y=-hw; y<hw+1; y++) {
+              for (let z=-hw; z<hw+1; z++) {
                 this.genOffset.set(x, y, z);
                 this.gen(t, this.genOffset);
               }
@@ -77,11 +78,11 @@ export class ChunkCollider extends WorldComponent {
   }
   gen (t: Tracker, offset: Vec3) {
     this.generatorVec.copy(t.center);
+    
+    this.generatorVec.add(offset);
     floorVec3(this.generatorVec);
 
-    this.generatorVec.add(offset);
-
-    this.generatorVec.y--; //search underneath (TODO expand to search area later)
+    // this.generatorVec.y--; //search underneath (TODO expand to search area later)
     if (!Chunk.isPositionBounded(
       this.generatorVec.x,
       this.generatorVec.y,
@@ -132,11 +133,15 @@ export class ChunkCollider extends WorldComponent {
       this.unusedColliders.delete(c);
       this.colliders.set(idx, c);
       //cuboids are centered, unoffset them!
-      v.x -=0.5;
-      v.y -=0.5;
-      v.z -=0.5;
+      // v.x -=0.5;
+      // v.y -=0.5;
+      // v.z -=0.5;
 
-      c.setTranslationWrtParent(v);
+      c.setTranslationWrtParent({
+        x: v.x + 1,
+        y: v.y + 1,
+        z: v.z + 1
+      });
     } else {
       //TODO - clear them from map this.colliders
       this.unusedColliders.add(c);

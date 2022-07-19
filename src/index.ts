@@ -125,12 +125,12 @@ async function main() {
   }
   createTestBox();
 
-  const chunk = new WorldEntity()
-  .setLabel("Chunk")
-  .setParent(chunkParent)
-  .addComponent(new Chunk());
+  // const chunk = new WorldEntity()
+  // .setLabel("Chunk")
+  // .setParent(chunkParent)
+  // .addComponent(new Chunk());
   
-  chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
+  // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
   const player = new WorldEntity()
     .addComponent(new Player())
@@ -149,6 +149,7 @@ async function main() {
   }
 
   setInterval(()=>{
+    Globals._rapierWorld.step();
     scene.onUpdate();
   }, Globals.delta);
 }

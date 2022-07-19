@@ -1,45 +1,174 @@
-import { Vec3 } from "ogl-typescript";
-import { Globals } from "../utils/global.js";
 import { WorldComponent } from "./worldcomponent.js";
+import { Globals } from "../utils/global.js";
+import RAPIER from "@dimforge/rapier3d-compat";
+export let RigidBodyType;
 
-function fixNaNVec3(v) {
-  if (isNaN(v.x)) v.x = 0;
-  if (isNaN(v.y)) v.y = 0;
-  if (isNaN(v.z)) v.z = 0;
-}
+(function (RigidBodyType) {
+  RigidBodyType[RigidBodyType["FIXED"] = 0] = "FIXED";
+  RigidBodyType[RigidBodyType["DYNAMIC"] = 1] = "DYNAMIC";
+  RigidBodyType[RigidBodyType["KinematicPositionBased"] = 2] = "KinematicPositionBased";
+  RigidBodyType[RigidBodyType["KinematicVelocityBased"] = 3] = "KinematicVelocityBased";
+})(RigidBodyType || (RigidBodyType = {}));
 
 export class RigidBody extends WorldComponent {
   constructor() {
     super();
-    this.velocity = new Vec3();
-    this.deltaVelocity = new Vec3();
-    this.setMass(5);
-    this.useGravity = false;
 
     this.onUpdate = () => {
-      if (this.useGravity) this.addForce(Globals.gravity);
-      this.deltaVelocity.copy(this.velocity);
-      this.deltaVelocity.multiply(Globals.delta);
-      this.deltaVelocity.divide(this.mass); // this.deltaVelocity.multiply( this.velocity.len() * this.drag + 0.01 );
-      // fixNaNVec3(this.deltaVelocity);
-      // fixNaNVec3(this.velocity);
+      let v = this._rapierRigidBody.translation();
 
-      this.transform.position.add(this.deltaVelocity);
+      this.transform.position.set(v.x, v.y, v.z);
     };
+
+    this.type = RigidBodyType.DYNAMIC;
+  }
+  /**Cannot be changed while rigidbody component is attached and enabled, set then reattach the component to see changes*/
+
+
+  set type(t) {
+    this._type = t;
   }
 
-  setUseGravity(g) {
-    this.useGravity = g;
+  onAttach() {
+    let {
+      x,
+      y,
+      z
+    } = this.transform.position;
+
+    switch (this.type) {
+      case RigidBodyType.FIXED:
+        this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.fixed();
+        break;
+
+      case RigidBodyType.KinematicPositionBased:
+        this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased();
+        break;
+
+      case RigidBodyType.KinematicVelocityBased:
+        this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
+        break;
+
+      default:
+        this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.dynamic();
+        break;
+    }
+
+    this._rapierRigidBodyDesc.setAdditionalMass(1);
+
+    this._rapierRigidBodyDesc.setTranslation(x, y, z);
+
+    this._rapierRigidBody = Globals._rapierWorld.createRigidBody(this._rapierRigidBodyDesc);
+  }
+
+  onDetach() {
+    Globals._rapierWorld.removeRigidBody(this._rapierRigidBody);
+  }
+
+  onDeactivate() {
+    Globals._rapierWorld.removeRigidBody(this._rapierRigidBody);
+  }
+
+  onReactivate() {
+    let {
+      x,
+      y,
+      z
+    } = this.transform.position;
+    this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y, z);
+    this._rapierRigidBody = Globals._rapierWorld.createRigidBody(this._rapierRigidBodyDesc);
+  }
+  /**Reset the forces to zero.*/
+
+
+  resetForces(wake) {
+    this._rapierRigidBody.resetForces(wake);
+
+    return this;
+  }
+  /**Reset torques to zero*/
+
+
+  resetTorques(wake) {
+    this._rapierRigidBody.resetTorques(wake);
+
     return this;
   }
 
-  setMass(m) {
-    this.mass = m;
+  addForce(v, wake) {
+    this._rapierRigidBody.addForce(v, wake);
+
     return this;
   }
 
-  addForce(v) {
-    this.velocity.add(v);
+  addTorque(v, wake) {
+    this._rapierRigidBody.addTorque(v, wake);
+
+    return this;
+  }
+
+  addForceAtPoint(v, p, wake) {
+    this._rapierRigidBody.addForceAtPoint(v, p, wake);
+
+    return this;
+  }
+
+  applyImpulse(v, wake) {
+    this._rapierRigidBody.applyImpulse(v, wake);
+
+    return this;
+  }
+
+  applyTorqueImpulse(v, wake) {
+    this._rapierRigidBody.applyTorqueImpulse(v, wake);
+
+    return this;
+  }
+
+  applyImpulseAtPoint(v, p, wake) {
+    this._rapierRigidBody.applyImpulseAtPoint(v, p, wake);
+
+    return this;
+  }
+
+  lockTranslations(locked, wake) {
+    this._rapierRigidBody.lockTranslations(locked, wake);
+
+    return this;
+  }
+
+  lockRotations(locked, wake) {
+    this._rapierRigidBody.lockRotations(locked, wake);
+
+    return this;
+  }
+
+  setEnabledRotations(x, y, z, wake) {
+    this._rapierRigidBody.setEnabledRotations(x, y, z, wake);
+
+    return this;
+  }
+
+  setLinearDamping(d) {
+    this._rapierRigidBody.setLinearDamping(d);
+
+    return this;
+  }
+
+  setAngularDamping(d) {
+    this.setAngularDamping(d);
+    return this;
+  }
+
+  setDominanceGroup(g) {
+    this._rapierRigidBody.setDominanceGroup(g);
+
+    return this;
+  }
+
+  enableCcd(enable) {
+    this._rapierRigidBody.enableCcd(enable);
+
     return this;
   }
 

@@ -92,9 +92,12 @@ async function main() {
     mesh.setParent(chunkParent.transform);
   }
 
-  createTestBox();
-  const chunk = new WorldEntity().setLabel("Chunk").setParent(chunkParent).addComponent(new Chunk());
-  chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
+  createTestBox(); // const chunk = new WorldEntity()
+  // .setLabel("Chunk")
+  // .setParent(chunkParent)
+  // .addComponent(new Chunk());
+  // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
+
   const player = new WorldEntity().addComponent(new Player()).setParent(scene).setLabel("Player");
   sceneGraphDisplay.setRootNode(scene);
   requestAnimationFrame(update);
@@ -110,6 +113,8 @@ async function main() {
   }
 
   setInterval(() => {
+    Globals._rapierWorld.step();
+
     scene.onUpdate();
   }, Globals.delta);
 }

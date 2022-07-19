@@ -35,7 +35,7 @@ export class Component {
    * make sure to call super() in your subclass
    */
   constructor () {
-
+    this._active = true;
   }
   /**
    * Get notified when the component is attached to an entity

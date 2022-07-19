@@ -38,7 +38,7 @@ export class Chunk extends WorldComponent {
     let blocksTexture = TextureLoader.load(Globals.gl, {
       src: "./textures/top_grass.png"
     });
-    console.log(blocksTexture);
+    // console.log(blocksTexture);
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
         attribute vec2 uv;
@@ -132,7 +132,10 @@ export class Chunk extends WorldComponent {
 
     for (let i = 0; i < this.data.byteLength; i++) {
       Chunk.indexToPosition(i, position);
-      if (position.distance(origin) < Chunk.BLOCK_SIDE_LENGTH / 2) {
+      position.x -= 0.5;
+      position.y -= 0.5;
+      position.z -= 0.5;
+      if (position.distance(origin)+0.5 < Chunk.BLOCK_SIDE_LENGTH / 2) {
         this.data[i] = 1;
       } else {
         this.data[i] = 0;

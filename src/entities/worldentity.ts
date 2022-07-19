@@ -72,7 +72,9 @@ export class WorldEntity extends Entity {
 
     for (let child of this.transform.children) {
       component = child[ESC_COMPONENT_NAMESPACE];
-      if (component && component.entity) component.entity.onUpdate();
+      if (component && component.entity) {
+        component.entity.onUpdate();
+      }
     }
 
   }

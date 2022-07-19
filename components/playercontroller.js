@@ -7,20 +7,17 @@ export class PlayerController extends WorldComponent {
   constructor() {
     super();
     this.movement = new Vec3();
-    this.nVelocity = new Vec3();
-    this.speed = 0.01;
+    this.speed = 5;
     this.input = GameInput.get();
 
     this.onUpdate = () => {
       let fwd = this.input.getAxisValue("forward");
       let strafe = this.input.getAxisValue("strafe");
-      this.nVelocity.copy(this.rb.velocity).multiply(-0.25);
       this.movement.x = strafe;
       this.movement.z = fwd;
       this.movement.normalize();
       this.movement.multiply(this.speed);
-      this.movement.add(this.nVelocity);
-      if (this.rb) this.rb.addForce(this.movement);
+      if (this.rb) this.rb.addForce(this.movement, true);
     };
   }
 

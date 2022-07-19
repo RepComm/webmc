@@ -39,7 +39,9 @@ export class Component {
    */
 
 
-  constructor() {}
+  constructor() {
+    this._active = true;
+  }
   /**
    * Get notified when the component is attached to an entity
    * This happens right after attachment, so this.entity is valid

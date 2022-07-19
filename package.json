@@ -29,6 +29,7 @@
     "build": "babel src --extensions .ts --copy-files -d ."
   },
   "dependencies": {
+    "@dimforge/rapier3d": "^0.9.0",
     "@repcomm/exponent-ts": "^1.1.9",
     "@repcomm/gameinput-ts": "^1.10.4",
     "ogl-typescript": "git://github.com/RepComm/ogl-typescript/tree/temp-npm-installable"

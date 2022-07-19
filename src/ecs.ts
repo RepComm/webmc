@@ -5,7 +5,19 @@
  */
 export class Component {
   protected _entity: Entity;
-  
+  protected _active: boolean;
+  get active (): boolean {
+    return this._active;
+  }
+  setActive (active: boolean): this {
+    let previousValue = this._active;
+    this._active = (active === true);
+    if (this._active !== previousValue) {
+      if (this._active) this.onReactivate();
+      else this.onDeactivate();
+    }
+    return this;
+  }
   /**
    * Get the entity this component is attached to
    */
@@ -37,6 +49,16 @@ export class Component {
    * This happens right before detachment, so this.entity is still valid
    */
   onDetach () {
+
+  }
+  /**
+   * Components start out active, this method is only called after
+   * deactivating and then reactivating it
+   */
+  onReactivate () {
+
+  }
+  onDeactivate () {
 
   }
   onUpdate: ()=>void;
@@ -188,7 +210,7 @@ export class Entity {
   onUpdate () {
     if (!this._components) return;
     for (let c of this.components) {
-      if (c.onUpdate) c.onUpdate();
+      if (c.active && c.onUpdate) c.onUpdate();
     }
   }
   getOrCreateComponent<T>(c: new ()=> T): T {

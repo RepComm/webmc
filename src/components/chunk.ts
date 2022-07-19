@@ -3,6 +3,7 @@ import { Program, TextureLoader, Vec3 } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js";
+import { ChunkCollider } from "./chunkcollider.js";
 import { Mesh } from "./mesh.js";
 import { WorldComponent } from "./worldcomponent.js";
 
@@ -23,6 +24,8 @@ export class Chunk extends WorldComponent {
   private renderBlock: Block;
   private neighborBlock: Block;
   private renderBlockSides: MeshBuilderCubeSides;
+
+  chunkCollider: ChunkCollider;
 
   constructor() {
     super();
@@ -74,6 +77,8 @@ export class Chunk extends WorldComponent {
     this.mesh = new Mesh(chunkMaterial);
     this.entity.addComponent(this.mesh);
     // this.mesh = this.getOrCreateComponent(Mesh);
+
+    this.chunkCollider = this.getOrCreateComponent(ChunkCollider);
 
     setTimeout(() => {
       this.generate();

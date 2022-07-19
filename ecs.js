@@ -3,9 +3,25 @@
  * 
  */
 export class Component {
+  get active() {
+    return this._active;
+  }
+
+  setActive(active) {
+    let previousValue = this._active;
+    this._active = active === true;
+
+    if (this._active !== previousValue) {
+      if (this._active) this.onReactivate();else this.onDeactivate();
+    }
+
+    return this;
+  }
   /**
    * Get the entity this component is attached to
    */
+
+
   get entity() {
     return this._entity;
   }
@@ -38,6 +54,15 @@ export class Component {
 
 
   onDetach() {}
+  /**
+   * Components start out active, this method is only called after
+   * deactivating and then reactivating it
+   */
+
+
+  onReactivate() {}
+
+  onDeactivate() {}
 
   /**
    * Get a sibling component given the constructor of the component or its name
@@ -194,7 +219,7 @@ export class Entity {
     if (!this._components) return;
 
     for (let c of this.components) {
-      if (c.onUpdate) c.onUpdate();
+      if (c.active && c.onUpdate) c.onUpdate();
     }
   }
 

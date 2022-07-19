@@ -1,3 +1,4 @@
+import RAPIER from "@dimforge/rapier3d-compat";
 import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@repcomm/exponent-ts";
 import { Box, Camera, Program, Renderer, Mesh as OGLMesh } from "ogl-typescript";
 import { Globals } from "./utils/global.js";
@@ -11,6 +12,13 @@ EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
 
 async function main() {
+  await RAPIER.init();
+  Globals._rapierWorld = new RAPIER.World({
+    x: 0,
+    y: -9.18,
+    z: 0
+  });
+  console.log("Loaded rapier", RAPIER);
   const ap = AudioPlayer.get();
   await ap.loadAudio("./audio/arcadiadica.wav", "arcadiadica");
   let music = ap.getAudio("arcadiadica");

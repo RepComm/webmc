@@ -103,7 +103,7 @@ export class Mesh extends Component {
       },
       normal: {
         size: 3,
-        data: mbr.vs //ns
+        data: mbr.vs //ns //TODO - calculate normals properly
 
       }
     });

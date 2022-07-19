@@ -5,6 +5,7 @@ import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js";
 import { ChunkCollider } from "./chunkcollider.js";
 import { Mesh } from "./mesh.js";
+import { RigidBody, RigidBodyType } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
 
 export class Chunk extends WorldComponent {
@@ -19,6 +20,7 @@ export class Chunk extends WorldComponent {
   static DATA_SIZE: number;
 
   mesh: Mesh;
+  rb: RigidBody;
 
   private data: Uint8Array;
   private renderBlock: Block;
@@ -78,13 +80,14 @@ export class Chunk extends WorldComponent {
     this.entity.addComponent(this.mesh);
     // this.mesh = this.getOrCreateComponent(Mesh);
 
+    this.generate();
+    this.rebuild();
+
+    this.rb = new RigidBody();
+    this.rb.type = RigidBodyType.FIXED;
+    this.entity.addComponent(this.rb);
     this.chunkCollider = this.getOrCreateComponent(ChunkCollider);
-
-    setTimeout(() => {
-      this.generate();
-      this.rebuild();
-
-    }, 500);
+    
   }
 
   static positionToIndex(x: number, y: number, z: number): number {

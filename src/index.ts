@@ -11,6 +11,7 @@ import { MCBTN } from "./ui/mcbtn.js";
 import { SceneGraph } from "./ui/scenegraph.js";
 import { Player } from "./components/player.js";
 import { Chunk } from "./components/chunk.js";
+import { ChunkCollider } from "./components/chunkcollider.js";
 
 
 EXPONENT_CSS_STYLES.mount(document.head);
@@ -19,7 +20,10 @@ EXPONENT_CSS_BODY_STYLES.mount(document.head);
 async function main() {
   await RAPIER.init();
   Globals._rapierWorld = new RAPIER.World({x: 0, y: -9.18, z: 0});
-  console.log("Loaded rapier", RAPIER);
+  // console.log("Loaded rapier", RAPIER);
+  let groundColliderDesc = RAPIER.ColliderDesc.cuboid(10.0, 0.1, 10.0)
+  .setTranslation(0,0, 0);
+  Globals._rapierWorld.createCollider(groundColliderDesc);
 
   const ap = AudioPlayer.get();
   await ap.loadAudio("./audio/arcadiadica.wav", "arcadiadica");
@@ -92,43 +96,14 @@ async function main() {
   const scene = new WorldEntity();
   scene.label = "Scene";
 
-  const chunkParent = new WorldEntity();
-  chunkParent.label = "Chunk Parent";
-  chunkParent.setParent(scene.transform);
+  // const chunkParent = new WorldEntity();
+  // chunkParent.label = "Chunk Parent";
+  // chunkParent.setParent(scene.transform);
 
-  function createTestBox() {
-
-    const geometry = new Box(gl);
-
-    const program = new Program(gl, {
-      vertex:
-      `
-        attribute vec3 position;
-
-        uniform mat4 modelViewMatrix;
-        uniform mat4 projectionMatrix;
-
-        void main() {
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragment:
-      `
-        void main() {
-          gl_FragColor = vec4(1.0);
-        }
-      `,
-    });
-
-    const mesh = new OGLMesh(gl, { geometry, program });
-    mesh.setParent(chunkParent.transform);
-  }
-  createTestBox();
-
-  // const chunk = new WorldEntity()
-  // .setLabel("Chunk")
-  // .setParent(chunkParent)
-  // .addComponent(new Chunk());
+  const chunk = new WorldEntity()
+  .setLabel("Chunk")
+  .setParent(scene)
+  .addComponent(new Chunk());
   
   // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
@@ -136,6 +111,11 @@ async function main() {
     .addComponent(new Player())
     .setParent(scene)
     .setLabel("Player");
+  camera.setParent(player.transform);
+  
+  chunk.getComponent(ChunkCollider).startTrack({
+    center: player.transform.position
+  });
 
   sceneGraphDisplay.setRootNode(scene);
 
@@ -143,7 +123,7 @@ async function main() {
   function update(t: number) {
     requestAnimationFrame(update);
 
-    chunkParent.transform.rotation.y += 0.005;
+    // chunkParent.transform.rotation.y += 0.005;
     // mesh.rotation.x += 0.01;
     renderer.render({ scene: scene.transform, camera });
   }

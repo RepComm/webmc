@@ -13,7 +13,7 @@ export enum RigidBodyType {
 
 export class RigidBody extends WorldComponent {
   private _rapierRigidBodyDesc: RAPIER.RigidBodyDesc;
-  private _rapierRigidBody: RAPIER.RigidBody;
+  _rapierRigidBody: RAPIER.RigidBody;
 
   private _type: RigidBodyType;
 
@@ -33,10 +33,11 @@ export class RigidBody extends WorldComponent {
 
   onAttach(): void {
     let { x, y, z } = this.transform.position;
-
-    switch (this.type) {
+    console.log("RB", this.type, this.entity.label);
+    switch (this._type) {
       case RigidBodyType.FIXED:
         this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.fixed();
+        console.log("Fixed rb", this.entity.label);
         break;
       case RigidBodyType.KinematicPositionBased:
         this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased();
@@ -66,6 +67,8 @@ export class RigidBody extends WorldComponent {
 
     this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(x, y, z);
+    this._rapierRigidBodyDesc.setAdditionalMass(1);
+
 
     this._rapierRigidBody = Globals._rapierWorld.createRigidBody(
       this._rapierRigidBodyDesc

@@ -35,10 +35,12 @@ export class RigidBody extends WorldComponent {
       y,
       z
     } = this.transform.position;
+    console.log("RB", this.type, this.entity.label);
 
-    switch (this.type) {
+    switch (this._type) {
       case RigidBodyType.FIXED:
         this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.fixed();
+        console.log("Fixed rb", this.entity.label);
         break;
 
       case RigidBodyType.KinematicPositionBased:
@@ -76,6 +78,9 @@ export class RigidBody extends WorldComponent {
       z
     } = this.transform.position;
     this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y, z);
+
+    this._rapierRigidBodyDesc.setAdditionalMass(1);
+
     this._rapierRigidBody = Globals._rapierWorld.createRigidBody(this._rapierRigidBodyDesc);
   }
   /**Reset the forces to zero.*/

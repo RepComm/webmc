@@ -38,7 +38,7 @@ export class Player extends WorldComponent {
     });
 
     this.mesh = new Mesh(playerMaterial);
-    this.entity.addComponent(this.mesh)
+    this.entity.addComponent(this.mesh);
   
     let mb = new MeshBuilder();
     mb.clear();

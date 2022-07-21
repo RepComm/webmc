@@ -1,5 +1,5 @@
 
-import { Program, TextureLoader, Vec3 } from "ogl-typescript";
+import { Program, TextureLoader, Vec2, Vec3 } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js";
@@ -39,11 +39,12 @@ export class Chunk extends WorldComponent {
     this.renderBlockSides = {};
   }
   onAttach(): void {
-    let blocksTexture = TextureLoader.load(Globals.gl, {
-      src: "./textures/top_grass.png",
-      magFilter: Globals.gl.NEAREST,
-      // minFilter: Globals.gl.NEAREST
-    });
+
+    // let blocksTexture = TextureLoader.load(Globals.gl, {
+    //   src: "./textures/side_grass.png",
+    //   magFilter: Globals.gl.NEAREST,
+    //   // minFilter: Globals.gl.NEAREST
+    // });
     // console.log(blocksTexture);
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
@@ -77,7 +78,8 @@ export class Chunk extends WorldComponent {
           gl_FragColor.a = 1.0;
         }`,
       uniforms: {
-        tMap: { value: blocksTexture },
+        tMap: { value: Globals.atlas.texture },
+        // tMap: { value: blocksTexture },
       },
     });
     this.mesh = new Mesh(chunkMaterial);

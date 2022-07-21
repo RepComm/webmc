@@ -28,6 +28,8 @@ export class PlayerController extends WorldComponent {
 
     this.onUpdate = () => {
       if (this.rb) {
+        let rx = this.input.builtinMovementConsumer.getDeltaX();
+        let ry = this.input.builtinMovementConsumer.getDeltaY();
         let fwd = this.input.getAxisValue("forward");
         let strafe = this.input.getAxisValue("strafe");
         this.movement.x = strafe;
@@ -68,10 +70,11 @@ export class PlayerController extends WorldComponent {
   }
 
   onAttach() {
-    this.player = this.getComponent(Player);
+    this.entity.getChildByLabel("cameraAttachPoint");
+    this.player = this.getComponent(Player); //playercontroller is added by Player, so Player should exist. otherwise error
+
     this.transform.position.y = 10;
-    this.rb = this.getOrCreateComponent(RigidBody);
-    this.rb.setLinearDamping(2);
+    this.rb = this.getOrCreateComponent(RigidBody).setEnabledRotations(false, false, false, true).setLinearDamping(2);
     this.col = this.getOrCreateComponent(CubeCollider);
     this.input.getOrCreateAxis("forward").addInfluence({
       value: -1,

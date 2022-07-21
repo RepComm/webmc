@@ -1,4 +1,4 @@
-import { Program, TextureLoader } from "ogl-typescript";
+import { Program } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js"; // import { ChunkCollider } from "./chunkcollider.js";
@@ -23,12 +23,12 @@ export class Chunk extends WorldComponent {
   }
 
   onAttach() {
-    let blocksTexture = TextureLoader.load(Globals.gl, {
-      src: "./textures/top_grass.png",
-      magFilter: Globals.gl.NEAREST // minFilter: Globals.gl.NEAREST
-
-    }); // console.log(blocksTexture);
-
+    // let blocksTexture = TextureLoader.load(Globals.gl, {
+    //   src: "./textures/side_grass.png",
+    //   magFilter: Globals.gl.NEAREST,
+    //   // minFilter: Globals.gl.NEAREST
+    // });
+    // console.log(blocksTexture);
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
         attribute vec2 uv;
@@ -62,8 +62,9 @@ export class Chunk extends WorldComponent {
         }`,
       uniforms: {
         tMap: {
-          value: blocksTexture
-        }
+          value: Globals.atlas.texture
+        } // tMap: { value: blocksTexture },
+
       }
     });
     this.mesh = new Mesh(chunkMaterial);

@@ -51,6 +51,23 @@ export class WorldEntity extends Entity {
 
     return result || null;
   }
+
+  getChildByLabel(label, ignoreCase = true) {
+    let all = this.getChildren();
+    if (!all) return null;
+
+    for (let child of all) {
+      if (child.label === label) return child;
+    }
+
+    return null;
+  }
+
+  getOrCreateChildByLabel(label, ignoreCase = true) {
+    let child = this.getChildByLabel(label, ignoreCase);
+    if (!child) child = new WorldEntity(label);
+    return child;
+  }
   /**
    * Walk thru the scenegraph of WorldEntitys
    * 
@@ -61,6 +78,7 @@ export class WorldEntity extends Entity {
   traverse(cb, depth = 0, maxDepth = 10) {
     cb(this, depth);
     let children = this.getChildren();
+    if (!children) return;
 
     for (let child of children) {
       // cb(child+1, depth);

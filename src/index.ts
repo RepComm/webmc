@@ -2,17 +2,16 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 
 import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@repcomm/exponent-ts";
-import { Box, Camera, Program, Renderer, Transform as OGLTransform, Mesh as OGLMesh } from "ogl-typescript";
-import { Globals } from "./utils/global.js";
+import { Camera, Renderer, Vec2 } from "ogl-typescript";
 import { AudioPlayer } from "./audio/audioplayer.js";
-import { Mesh } from "./components/mesh.js";
+import { Chunk } from "./components/chunk.js";
+import { Player } from "./components/player.js";
 import { WorldEntity } from "./entities/worldentity.js";
 import { MCBTN } from "./ui/mcbtn.js";
 import { SceneGraph } from "./ui/scenegraph.js";
-import { Player } from "./components/player.js";
-import { Chunk } from "./components/chunk.js";
-import { ChunkCollider } from "./components/chunkcollider.js";
-
+import { Globals } from "./utils/global.js";
+import { AtlasBuilder } from "./utils/atlas.js";
+import { BlockTextureSlot, BlockType } from "./voxel/blockdef.js";
 
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
@@ -38,7 +37,6 @@ async function main() {
   const container = new Panel()
     .setId("container")
     .mount(document.body);
-
 
   const btns = new Panel()
     .setId("buttons")
@@ -96,9 +94,40 @@ async function main() {
   const scene = new WorldEntity();
   scene.label = "Scene";
 
-  // const chunkParent = new WorldEntity();
-  // chunkParent.label = "Chunk Parent";
-  // chunkParent.setParent(scene.transform);
+  let atlasBuilder = new AtlasBuilder();
+
+  atlasBuilder.init({
+    faceSize: new Vec2(16, 16),
+    width: 16*4,
+    height: 16//*4
+  });
+
+  // await atlasBuilder.loadTexture(
+  //   "./textures/block-unknown.png",
+  //   BlockType.UNKNOWN, BlockTextureSlot.MAIN
+  // );
+
+  await atlasBuilder.loadTexture(
+    "./textures/all_stone.png",
+    BlockType.STONE, BlockTextureSlot.MAIN
+  );
+
+  await atlasBuilder.loadTexture(
+    "./textures/all_dirt.png",
+    BlockType.DIRT, BlockTextureSlot.MAIN
+  );
+
+  await atlasBuilder.loadTexture(
+    "./textures/side_grass.png",
+    BlockType.GRASS, BlockTextureSlot.SIDE
+  );
+  await atlasBuilder.loadTexture(
+    "./textures/top_grass.png",
+    BlockType.GRASS, BlockTextureSlot.UP
+  );
+
+  Globals.atlas = await atlasBuilder.build();
+  console.log(Globals.atlas.texture);
 
   const chunk = new WorldEntity()
   .setLabel("Chunk")

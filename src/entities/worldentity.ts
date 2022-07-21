@@ -15,7 +15,7 @@ export class WorldEntity extends Entity {
   /**
    * Get the parent WorldEntity (if any, note: this does not include raw ogl Transforms)
    */
-  get parent(): WorldEntity {
+  get parent(): WorldEntity|null {
     let p = this.transform.getParent();
     if (p) return p.entity;
     return null;
@@ -52,6 +52,19 @@ export class WorldEntity extends Entity {
     }
     return result || null;
   }
+  getChildByLabel (label: string, ignoreCase: boolean = true): WorldEntity|null {
+    let all = this.getChildren();
+    if (!all) return null;
+    for (let child of all) {
+      if ( child.label === label) return child;
+    }
+    return null;
+  }
+  getOrCreateChildByLabel (label: string, ignoreCase: boolean = true): WorldEntity {
+    let child = this.getChildByLabel(label, ignoreCase);
+    if (!child) child = new WorldEntity(label);
+    return child;
+  }
   /**
    * Walk thru the scenegraph of WorldEntitys
    * 
@@ -61,6 +74,7 @@ export class WorldEntity extends Entity {
     cb(this, depth);
 
     let children = this.getChildren();
+    if (!children) return;
     for (let child of children) {
       // cb(child+1, depth);
       child.traverse(cb, depth+1, maxDepth);

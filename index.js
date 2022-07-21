@@ -15,7 +15,7 @@ async function main() {
   await RAPIER.init();
   Globals._rapierWorld = new RAPIER.World({
     x: 0,
-    y: -9.18,
+    y: -16,
     z: 0
   }); // console.log("Loaded rapier", RAPIER);
 

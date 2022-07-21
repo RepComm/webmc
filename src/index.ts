@@ -19,7 +19,7 @@ EXPONENT_CSS_BODY_STYLES.mount(document.head);
 
 async function main() {
   await RAPIER.init();
-  Globals._rapierWorld = new RAPIER.World({x: 0, y: -9.18, z: 0});
+  Globals._rapierWorld = new RAPIER.World({x: 0, y: -16, z: 0});
   // console.log("Loaded rapier", RAPIER);
   let groundColliderDesc = RAPIER.ColliderDesc.cuboid(10.0, 0.1, 10.0)
   .setTranslation(0,0, 0);

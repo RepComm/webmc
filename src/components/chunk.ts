@@ -40,7 +40,9 @@ export class Chunk extends WorldComponent {
   }
   onAttach(): void {
     let blocksTexture = TextureLoader.load(Globals.gl, {
-      src: "./textures/top_grass.png"
+      src: "./textures/top_grass.png",
+      magFilter: 1,
+      minFilter: 1
     });
     // console.log(blocksTexture);
     let chunkMaterial = new Program(Globals.gl, {
@@ -132,20 +134,17 @@ export class Chunk extends WorldComponent {
     return true;
   }
   generate() {
-    let position = new Vec3();
-    let origin = new Vec3(Chunk.BLOCK_SIDE_LENGTH / 2, Chunk.BLOCK_SIDE_LENGTH / 2, Chunk.BLOCK_SIDE_LENGTH / 2);
-
-    for (let i = 0; i < this.data.byteLength; i++) {
-      Chunk.indexToPosition(i, position);
-      position.x -= 0.5;
-      position.y -= 0.5;
-      position.z -= 0.5;
-      if (position.distance(origin)+0.5 < Chunk.BLOCK_SIDE_LENGTH / 2) {
-        this.data[i] = 1;
-      } else {
-        this.data[i] = 0;
+    for (let x=0;x<Chunk.BLOCK_SIDE_LENGTH;x++) {
+      for (let y=0;y<Chunk.BLOCK_SIDE_LENGTH;y++) {
+        for (let z=0;z<Chunk.BLOCK_SIDE_LENGTH;z++) {
+          let i = Chunk.positionToIndex(x, y, z);
+          if (x >= y) {
+            this.data[i] = 1;
+          } else {
+            this.data[i] = 0;
+          }
+        }
       }
-
     }
   }
   rebuild() {

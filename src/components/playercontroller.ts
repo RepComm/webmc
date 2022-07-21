@@ -15,18 +15,24 @@ export class PlayerController extends WorldComponent {
 
   movement: Vec3;
   speed: number;
-  jumpForce: number;
   input: GameInput;
+  
   isOnGround: boolean;
   ray: Ray;
+  jumpForce: number;
+  timeLastJump: number;
+  timeWaitJump: number;
 
   constructor () {
     super();
     this.movement = new Vec3();
-    this.speed = 7;
-    this.jumpForce = 10;
+    this.speed = 4;
     this.input = GameInput.get();
+
+    this.jumpForce = 7;
     this.isOnGround = false;
+    this.timeLastJump = 0;
+    this.timeWaitJump = 400;
 
     this.ray = new Ray({ x: 0.0, y: 0.0, z: 0.0 }, { x: 0.0, y: -1.0, z: 0.0 });
 
@@ -34,7 +40,6 @@ export class PlayerController extends WorldComponent {
       if (this.rb) {
         let fwd = this.input.getAxisValue("forward");
         let strafe = this.input.getAxisValue("strafe");
-
         
         this.movement.x = strafe;
         this.movement.z = fwd;
@@ -44,28 +49,37 @@ export class PlayerController extends WorldComponent {
         
         this.rb.applyImpulse(this.movement, true);
         
-        let jump = this.input.getAxisValue("jump");
-        if (jump > 0.5 && this.detectNearGround()) {
-          console.log("near ground, jumping");
-          this.movement.x = 0;
-          this.movement.z = 0;
-          this.movement.y = jump;
-          this.movement.normalize();
-          this.movement.multiply(this.jumpForce);
-  
-          this.rb.applyImpulse(this.movement, true);
-        }
-        
+        if (this.canJump()) this.jump();
       }
     };
+  }
+  jump () {
+    this.movement.x = 0;
+    this.movement.z = 0;
+    this.movement.y = 1;
+    // this.movement.normalize();
+    this.movement.multiply(this.jumpForce);
+
+    this.rb.applyImpulse(this.movement, true);
+  }
+  canJump (): boolean {
+    return (
+      this.input.getAxisValue("jump") > 0.5 &&
+      Date.now() - this.timeLastJump > this.timeWaitJump &&
+      this.detectNearGround()
+    );
   }
   detectNearGround (): boolean {
     let {x, y, z} = this.transform.position;
     this.ray.origin.x = x;
-    this.ray.origin.y = y - 1;
+    this.ray.origin.y = y + 0.1;
     this.ray.origin.z = z;
     // this.ray.dir
-    return Globals._rapierWorld.castRay(this.ray, 1, true) !== null;
+    return Globals._rapierWorld.castRay(
+      this.ray, 1, true,
+      undefined, undefined, undefined,
+      this.rb._rapierRigidBody
+    ) !== null;
   }
   onAttach(): void {
     this.player = this.getComponent(Player);

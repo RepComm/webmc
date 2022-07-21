@@ -10,10 +10,12 @@ export class PlayerController extends WorldComponent {
   constructor() {
     super();
     this.movement = new Vec3();
-    this.speed = 7;
-    this.jumpForce = 10;
+    this.speed = 4;
     this.input = GameInput.get();
+    this.jumpForce = 7;
     this.isOnGround = false;
+    this.timeLastJump = 0;
+    this.timeWaitJump = 400;
     this.ray = new Ray({
       x: 0.0,
       y: 0.0,
@@ -34,19 +36,22 @@ export class PlayerController extends WorldComponent {
         this.movement.normalize();
         this.movement.multiply(this.speed);
         this.rb.applyImpulse(this.movement, true);
-        let jump = this.input.getAxisValue("jump");
-
-        if (jump > 0.5 && this.detectNearGround()) {
-          console.log("near ground, jumping");
-          this.movement.x = 0;
-          this.movement.z = 0;
-          this.movement.y = jump;
-          this.movement.normalize();
-          this.movement.multiply(this.jumpForce);
-          this.rb.applyImpulse(this.movement, true);
-        }
+        if (this.canJump()) this.jump();
       }
     };
+  }
+
+  jump() {
+    this.movement.x = 0;
+    this.movement.z = 0;
+    this.movement.y = 1; // this.movement.normalize();
+
+    this.movement.multiply(this.jumpForce);
+    this.rb.applyImpulse(this.movement, true);
+  }
+
+  canJump() {
+    return this.input.getAxisValue("jump") > 0.5 && Date.now() - this.timeLastJump > this.timeWaitJump && this.detectNearGround();
   }
 
   detectNearGround() {
@@ -56,10 +61,10 @@ export class PlayerController extends WorldComponent {
       z
     } = this.transform.position;
     this.ray.origin.x = x;
-    this.ray.origin.y = y - 1;
+    this.ray.origin.y = y + 0.1;
     this.ray.origin.z = z; // this.ray.dir
 
-    return Globals._rapierWorld.castRay(this.ray, 1, true) !== null;
+    return Globals._rapierWorld.castRay(this.ray, 1, true, undefined, undefined, undefined, this.rb._rapierRigidBody) !== null;
   }
 
   onAttach() {

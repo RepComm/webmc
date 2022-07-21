@@ -62,6 +62,16 @@ export class Component {
 
   }
   onUpdate: ()=>void;
+  onMessage: (c: Component, msg: any)=>void;
+  /**Send a message that can be heard from other components on the same entity
+   * Returns false if no entity attached, and true otherwise
+  */
+  sendMessage (msg: any): boolean {
+    if (!this._entity) return false;
+    this.entity.onMessage(this, msg);
+    return true;
+  }
+
   /**
    * Get a sibling component given the constructor of the component or its name
    * 
@@ -221,5 +231,11 @@ export class Entity {
       this.addComponent(result);
     }
     return result;
+  }
+  onMessage(c: Component, msg: any): void {
+    if (!this._components) return;
+    for (let c of this.components) {
+      if (c.active && c.onMessage) c.onMessage(c, msg);
+    }
   }
 }

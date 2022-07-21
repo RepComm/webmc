@@ -22,11 +22,14 @@ export class MeshBuilder {
     this.vs = new Array();
     this.uvs = new Array();
     this.ns = new Array();
+    this.inds = new Array();
   }
 
   clear() {
     this.vs.length = 0;
     this.uvs.length = 0;
+    this.ns.length = 0;
+    this.inds.length = 0;
     return this;
   }
 
@@ -34,6 +37,7 @@ export class MeshBuilder {
     this.vs.push(x, y, z);
     this.uvs.push(u, v);
     this.ns.push(nx, ny, nz);
+    this.inds.push(1);
     return this;
   }
 
@@ -52,6 +56,8 @@ export class MeshBuilder {
     this.vs.push(ax, ay, az, bx, by, bz, cx, cy, cz);
     this.uvs.push(au || 0, av || 0, bu || 1, bv || 0, cu || 0, cv || 1);
     this.ns.push(nax || 0, nay || 0, naz || 0, nbx || 0, nby || 0, nbz || 0, ncx || 0, ncy || 0, ncz || 0);
+    let i = this.inds.length;
+    this.inds.push(i, i + 1, i + 2);
   }
 
   oop_tri(a, b, c, auv, buv, cuv, an, bn, cn) {
@@ -144,7 +150,8 @@ export class MeshBuilder {
     return {
       vs: new Float32Array(this.vs),
       uvs: new Float32Array(this.uvs),
-      ns: new Float32Array(this.ns)
+      ns: new Float32Array(this.ns),
+      inds: new Uint32Array(this.inds)
     };
   }
 

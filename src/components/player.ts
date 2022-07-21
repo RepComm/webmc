@@ -42,7 +42,7 @@ export class Player extends WorldComponent {
   
     let mb = new MeshBuilder();
     mb.clear();
-    mb.cube(0, 0, 0, 1, 1, 1);
+    mb.cube(-0.5, -0.5, -0.5, 1, 1, 1);
     let data = mb.build();
     this.mesh.updateGeometryFromMeshBuilder(Globals.gl, data);
   

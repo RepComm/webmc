@@ -55,6 +55,10 @@ function getDefaultProgram(): Program {
   return DefaultProgram;
 }
 
+export interface MeshGeomChangeEvt {
+  meshChanged: boolean;
+}
+
 export class Mesh extends Component {
   _oglMesh: OGLMesh;
   _customGeometry: CustomGeometry;
@@ -98,6 +102,11 @@ export class Mesh extends Component {
   }
   updateGeometry(gl: OGLRenderingContext, attributes: GeometryAttrs) {
     this._customGeometry.updateGeometry(gl, attributes);
+    let msg: MeshGeomChangeEvt = {
+      meshChanged: true
+    };
+
+    this.sendMessage(msg);
     // console.log("updating geometry", attributes);
   }
   updateGeometryFromMeshBuilder (gl: OGLRenderingContext, mbr: MeshBuilderBuildResult) {

@@ -3,8 +3,9 @@ import { Program, TextureLoader, Vec3 } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js";
-import { ChunkCollider } from "./chunkcollider.js";
+// import { ChunkCollider } from "./chunkcollider.js";
 import { Mesh } from "./mesh.js";
+import { MeshCollider } from "./meshcollider.js";
 import { RigidBody, RigidBodyType } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
 
@@ -20,6 +21,7 @@ export class Chunk extends WorldComponent {
   static DATA_SIZE: number;
 
   mesh: Mesh;
+  meshCollider: MeshCollider;
   rb: RigidBody;
 
   private data: Uint8Array;
@@ -27,7 +29,7 @@ export class Chunk extends WorldComponent {
   private neighborBlock: Block;
   private renderBlockSides: MeshBuilderCubeSides;
 
-  chunkCollider: ChunkCollider;
+  // chunkCollider: ChunkCollider;
 
   constructor() {
     super();
@@ -79,15 +81,15 @@ export class Chunk extends WorldComponent {
     this.mesh = new Mesh(chunkMaterial);
     this.entity.addComponent(this.mesh);
     // this.mesh = this.getOrCreateComponent(Mesh);
-
-    this.generate();
-    this.rebuild();
-
+    
     this.rb = new RigidBody();
     this.rb.type = RigidBodyType.FIXED;
     this.entity.addComponent(this.rb);
-    this.chunkCollider = this.getOrCreateComponent(ChunkCollider);
+    this.meshCollider = this.getOrCreateComponent(MeshCollider);
     
+
+    this.generate();
+    this.rebuild();
   }
 
   static positionToIndex(x: number, y: number, z: number): number {
@@ -179,6 +181,7 @@ export class Chunk extends WorldComponent {
     let data = mb.build();
 
     this.mesh.updateGeometryFromMeshBuilder(Globals.gl, data);
+    this.meshCollider.setTrimesh(data.vs, data.inds);
   }
 }
 

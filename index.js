@@ -8,7 +8,6 @@ import { MCBTN } from "./ui/mcbtn.js";
 import { SceneGraph } from "./ui/scenegraph.js";
 import { Player } from "./components/player.js";
 import { Chunk } from "./components/chunk.js";
-import { ChunkCollider } from "./components/chunkcollider.js";
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
 
@@ -74,9 +73,6 @@ async function main() {
 
   const player = new WorldEntity().addComponent(new Player()).setParent(scene).setLabel("Player");
   camera.setParent(player.transform);
-  chunk.getComponent(ChunkCollider).startTrack({
-    center: player.transform.position
-  });
   sceneGraphDisplay.setRootNode(scene);
   requestAnimationFrame(update);
 

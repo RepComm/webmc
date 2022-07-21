@@ -4,6 +4,7 @@ export interface MeshBuilderBuildResult {
   vs: Float32Array;
   uvs: Float32Array;
   ns: Float32Array;
+  inds: Uint32Array;
 }
 
 export interface MeshBuilderCubeSides {
@@ -43,15 +44,19 @@ export class MeshBuilder {
   private vs: Array<number>;
   private uvs: Array<number>;
   private ns: Array<number>;
+  private inds: Array<number>;
 
   constructor() {
     this.vs = new Array();
     this.uvs = new Array();
     this.ns = new Array();
+    this.inds = new Array();
   }
   clear(): this {
     this.vs.length = 0;
     this.uvs.length = 0;
+    this.ns.length = 0;
+    this.inds.length = 0;
     return this;
   }
   point(
@@ -62,6 +67,7 @@ export class MeshBuilder {
     this.vs.push(x, y, z);
     this.uvs.push(u, v);
     this.ns.push(nx, ny, nz);
+    this.inds.push(1);
     return this;
   }
   oop_point (pos: Vec3, uv?: Vec2, normal?: Vec3): this {
@@ -102,6 +108,9 @@ export class MeshBuilder {
       nbx||0, nby||0, nbz||0,
       ncx||0, ncy||0, ncz||0,
     );
+
+    let i=this.inds.length;
+    this.inds.push(i, i+1, i+2);
   }
   oop_tri (
     a: Vec3, b: Vec3, c: Vec3,
@@ -271,7 +280,8 @@ export class MeshBuilder {
     return {
       vs: new Float32Array(this.vs),
       uvs: new Float32Array(this.uvs),
-      ns: new Float32Array(this.ns)
+      ns: new Float32Array(this.ns),
+      inds: new Uint32Array(this.inds)
     };
   }
 }

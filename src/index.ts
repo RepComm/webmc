@@ -113,9 +113,6 @@ async function main() {
     .setLabel("Player");
   camera.setParent(player.transform);
   
-  chunk.getComponent(ChunkCollider).startTrack({
-    center: player.transform.position
-  });
 
   sceneGraphDisplay.setRootNode(scene);
 

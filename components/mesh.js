@@ -87,8 +87,12 @@ export class Mesh extends Component {
   }
 
   updateGeometry(gl, attributes) {
-    this._customGeometry.updateGeometry(gl, attributes); // console.log("updating geometry", attributes);
+    this._customGeometry.updateGeometry(gl, attributes);
 
+    let msg = {
+      meshChanged: true
+    };
+    this.sendMessage(msg); // console.log("updating geometry", attributes);
   }
 
   updateGeometryFromMeshBuilder(gl, mbr) {

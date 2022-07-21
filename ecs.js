@@ -66,6 +66,14 @@ export class Component {
 
   onDeactivate() {}
 
+  /**Send a message that can be heard from other components on the same entity
+   * Returns false if no entity attached, and true otherwise
+  */
+  sendMessage(msg) {
+    if (!this._entity) return false;
+    this.entity.onMessage(this, msg);
+    return true;
+  }
   /**
    * Get a sibling component given the constructor of the component or its name
    * 
@@ -85,6 +93,8 @@ export class Component {
    * this.getComponent(someInstance.constructor);
    * ```
    */
+
+
   getComponent(constructor) {
     if (!this.isAttached) return null;
     return this.entity.getComponent(constructor);
@@ -235,6 +245,14 @@ export class Entity {
     }
 
     return result;
+  }
+
+  onMessage(c, msg) {
+    if (!this._components) return;
+
+    for (let _c of this.components) {
+      if (_c.active && _c.onMessage) _c.onMessage(_c, msg);
+    }
   }
 
 }

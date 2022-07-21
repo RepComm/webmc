@@ -9,7 +9,7 @@ export class CubeCollider extends WorldComponent {
   rb: RigidBody;
 
   private _rapierColliderDesc: RAPIER.ColliderDesc;
-  private _rapierCollider: RAPIER.Collider;
+  _rapierCollider: RAPIER.Collider;
   private _size: Vec3;
   private _offset: Vec3;
 
@@ -22,7 +22,7 @@ export class CubeCollider extends WorldComponent {
     this.rb = this.getComponent(RigidBody);
 
     this._rapierColliderDesc = RAPIER.ColliderDesc.cuboid(
-      this._size.x, this._size.y, this._size.z
+      this._size.x/2, this._size.y/2, this._size.z/2
     ).setTranslation(this._offset.x, this._offset.y, this._offset.z);
     
     if (this.rb) {

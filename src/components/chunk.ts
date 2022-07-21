@@ -41,8 +41,8 @@ export class Chunk extends WorldComponent {
   onAttach(): void {
     let blocksTexture = TextureLoader.load(Globals.gl, {
       src: "./textures/top_grass.png",
-      magFilter: 1,
-      minFilter: 1
+      magFilter: Globals.gl.NEAREST,
+      // minFilter: Globals.gl.NEAREST
     });
     // console.log(blocksTexture);
     let chunkMaterial = new Program(Globals.gl, {

@@ -71,7 +71,7 @@ export class MeshBuilder {
     return this;
   }
   oop_point (pos: Vec3, uv?: Vec2, normal?: Vec3): this {
-    this.point(pos.x, pos.y, pos.z, uv.x, uv.y, normal.x, normal.y, normal.z);
+    this.point(pos.x, pos.y, pos.z, uv?.x, uv?.y, normal?.x, normal?.y, normal?.z);
     return this;
   }
   validate(): this {
@@ -121,12 +121,12 @@ export class MeshBuilder {
       a.x, a.y, a.z,
       b.x, b.y, b.z,
       c.x, c.y, c.z,
-      auv.x, auv.y,
-      buv.x, buv.y,
-      cuv.x, cuv.y,
-      an.x, an.y, an.z,
-      bn.x, bn.y, bn.z,
-      cn.x, cn.y, cn.z
+      auv?.x, auv?.y,
+      buv?.x, buv?.y,
+      cuv?.x, cuv?.y,
+      an?.x, an?.y, an?.z,
+      bn?.x, bn?.y, bn?.z,
+      cn?.x, cn?.y, cn?.z
     );
     return this;
   }
@@ -161,7 +161,7 @@ export class MeshBuilder {
 
       au || 0, av || 0,
       bu || 1, bv || 0,
-      cu || 1, cv || 0,
+      cu || 0, cv || 1,
 
       nax, nay, naz,
       nbx, nby, nbz,
@@ -174,7 +174,7 @@ export class MeshBuilder {
 
       bu || 1, bv || 0,
       du || 1, dv || 1,
-      cu || 1, cv || 0,
+      cu || 0, cv || 1,
 
       nbx, nby, nbz,
       ndx, ndy, ndz,
@@ -192,14 +192,14 @@ export class MeshBuilder {
       b.x, b.y, b.z,
       c.x, c.y, c.z,
       d.x, d.y, d.z,
-      auv.x, auv.y,
-      buv.x, buv.y,
-      cuv.x, cuv.y,
-      duv.x, duv.y,
-      an.x, an.y, an.z,
-      bn.x, bn.y, bn.z,
-      cn.x, cn.y, cn.z,
-      dn.x, dn.y, dn.z
+      auv?.x, auv?.y,
+      buv?.x, buv?.y,
+      cuv?.x, cuv?.y,
+      duv?.x, duv?.y,
+      an?.x, an?.y, an?.z,
+      bn?.x, bn?.y, bn?.z,
+      cn?.x, cn?.y, cn?.z,
+      dn?.x, dn?.y, dn?.z
     );
   }
   cube(

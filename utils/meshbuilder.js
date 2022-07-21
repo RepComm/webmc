@@ -42,7 +42,7 @@ export class MeshBuilder {
   }
 
   oop_point(pos, uv, normal) {
-    this.point(pos.x, pos.y, pos.z, uv.x, uv.y, normal.x, normal.y, normal.z);
+    this.point(pos.x, pos.y, pos.z, uv === null || uv === void 0 ? void 0 : uv.x, uv === null || uv === void 0 ? void 0 : uv.y, normal === null || normal === void 0 ? void 0 : normal.x, normal === null || normal === void 0 ? void 0 : normal.y, normal === null || normal === void 0 ? void 0 : normal.z);
     return this;
   }
 
@@ -61,7 +61,7 @@ export class MeshBuilder {
   }
 
   oop_tri(a, b, c, auv, buv, cuv, an, bn, cn) {
-    this.tri(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, auv.x, auv.y, buv.x, buv.y, cuv.x, cuv.y, an.x, an.y, an.z, bn.x, bn.y, bn.z, cn.x, cn.y, cn.z);
+    this.tri(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, auv === null || auv === void 0 ? void 0 : auv.x, auv === null || auv === void 0 ? void 0 : auv.y, buv === null || buv === void 0 ? void 0 : buv.x, buv === null || buv === void 0 ? void 0 : buv.y, cuv === null || cuv === void 0 ? void 0 : cuv.x, cuv === null || cuv === void 0 ? void 0 : cuv.y, an === null || an === void 0 ? void 0 : an.x, an === null || an === void 0 ? void 0 : an.y, an === null || an === void 0 ? void 0 : an.z, bn === null || bn === void 0 ? void 0 : bn.x, bn === null || bn === void 0 ? void 0 : bn.y, bn === null || bn === void 0 ? void 0 : bn.z, cn === null || cn === void 0 ? void 0 : cn.x, cn === null || cn === void 0 ? void 0 : cn.y, cn === null || cn === void 0 ? void 0 : cn.z);
     return this;
   }
   /**
@@ -75,12 +75,12 @@ export class MeshBuilder {
 
 
   quad(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, au, av, bu, bv, cu, cv, du, dv, nax, nay, naz, nbx, nby, nbz, ncx, ncy, ncz, ndx, ndy, ndz) {
-    this.tri(ax, ay, az, bx, by, bz, cx, cy, cz, au || 0, av || 0, bu || 1, bv || 0, cu || 1, cv || 0, nax, nay, naz, nbx, nby, nbz, ncx, ncy, ncz);
-    this.tri(bx, by, bz, dx, dy, dz, cx, cy, cz, bu || 1, bv || 0, du || 1, dv || 1, cu || 1, cv || 0, nbx, nby, nbz, ndx, ndy, ndz, ncx, ncy, ncz);
+    this.tri(ax, ay, az, bx, by, bz, cx, cy, cz, au || 0, av || 0, bu || 1, bv || 0, cu || 0, cv || 1, nax, nay, naz, nbx, nby, nbz, ncx, ncy, ncz);
+    this.tri(bx, by, bz, dx, dy, dz, cx, cy, cz, bu || 1, bv || 0, du || 1, dv || 1, cu || 0, cv || 1, nbx, nby, nbz, ndx, ndy, ndz, ncx, ncy, ncz);
   }
 
   oop_quad(a, b, c, d, auv, buv, cuv, duv, an, bn, cn, dn) {
-    this.quad(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, d.x, d.y, d.z, auv.x, auv.y, buv.x, buv.y, cuv.x, cuv.y, duv.x, duv.y, an.x, an.y, an.z, bn.x, bn.y, bn.z, cn.x, cn.y, cn.z, dn.x, dn.y, dn.z);
+    this.quad(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, d.x, d.y, d.z, auv === null || auv === void 0 ? void 0 : auv.x, auv === null || auv === void 0 ? void 0 : auv.y, buv === null || buv === void 0 ? void 0 : buv.x, buv === null || buv === void 0 ? void 0 : buv.y, cuv === null || cuv === void 0 ? void 0 : cuv.x, cuv === null || cuv === void 0 ? void 0 : cuv.y, duv === null || duv === void 0 ? void 0 : duv.x, duv === null || duv === void 0 ? void 0 : duv.y, an === null || an === void 0 ? void 0 : an.x, an === null || an === void 0 ? void 0 : an.y, an === null || an === void 0 ? void 0 : an.z, bn === null || bn === void 0 ? void 0 : bn.x, bn === null || bn === void 0 ? void 0 : bn.y, bn === null || bn === void 0 ? void 0 : bn.z, cn === null || cn === void 0 ? void 0 : cn.x, cn === null || cn === void 0 ? void 0 : cn.y, cn === null || cn === void 0 ? void 0 : cn.z, dn === null || dn === void 0 ? void 0 : dn.x, dn === null || dn === void 0 ? void 0 : dn.y, dn === null || dn === void 0 ? void 0 : dn.z);
   }
 
   cube(minx, miny, minz, w, h, d, sides = MeshBuilderCubeSidesALL) {

@@ -41,9 +41,9 @@ export class FlatTexMesh extends WorldComponent {
       r: 0, g: 0, b: 0, a: 0
     };
     this.sides = {
-      back_ZN: true,//false,
+      back_ZN: true,
       bottom_YN: true,
-      front_Z: true,//false,
+      front_Z: true,
       left_XN: true,
       right_X: true,
       top_Y: true

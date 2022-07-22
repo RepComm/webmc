@@ -4,11 +4,21 @@ import { UVQuad } from "../utils/atlas.js";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js";
+import { Track } from "../utils/anim.js";
 // import { ChunkCollider } from "./chunkcollider.js";
 import { Mesh } from "./mesh.js";
 import { MeshCollider } from "./meshcollider.js";
 import { RigidBody, RigidBodyType } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
+import { Vec3Animator } from "../utils/animators.js";
+
+export interface ChunkLoadAnim {
+  startTime: number;
+  durationTime: number;
+  currentTime: number;
+  startOffset: Vec3;
+  endOffset: Vec3;
+}
 
 export class Chunk extends WorldComponent {
 
@@ -30,7 +40,7 @@ export class Chunk extends WorldComponent {
   private neighborBlock: Block;
   private renderBlockSides: MeshBuilderCubeSides;
 
-  // chunkCollider: ChunkCollider;
+  animTrack: Vec3Animator;
 
   constructor() {
     super();
@@ -38,15 +48,67 @@ export class Chunk extends WorldComponent {
     this.renderBlock = new Block();
     this.neighborBlock = new Block();
     this.renderBlockSides = {};
+
+    this.animTrack = new Vec3Animator()
+    .createClip({
+      durationMillis: 1000,
+      start: 0,
+      end: 1,
+      fps: 30,
+      loop: false,
+      name: "fadein"
+    })
+    .createClip({
+      durationMillis: 1000,
+      start: 1,
+      end: 2,
+      fps: 30,
+      loop: false,
+      name: "fadeout"
+    });
+  }
+  onReactivate(): void {
+    this.animTrack
+    .setValueAtTime(0,
+      this.transform.position.x,
+      this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH,
+      this.transform.position.z
+    )
+    .setValueAtTime(1,
+      this.transform.position.x,
+      this.transform.position.y,
+      this.transform.position.z
+    )
+    .setValueAtTime(2,
+      this.transform.position.x,
+      this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH,
+      this.transform.position.z
+    );
   }
   onAttach(): void {
     Globals.debugChunk = this;
-    // let blocksTexture = TextureLoader.load(Globals.gl, {
-    //   src: "./textures/side_grass.png",
-    //   magFilter: Globals.gl.NEAREST,
-    //   // minFilter: Globals.gl.NEAREST
-    // });
-    // console.log(blocksTexture);
+
+    this.animTrack
+    .setValueAtTime(0,
+      this.transform.position.x,
+      this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH,
+      this.transform.position.z
+    )
+    .setValueAtTime(1,
+      this.transform.position.x,
+      this.transform.position.y,
+      this.transform.position.z
+    )
+    .setValueAtTime(2,
+      this.transform.position.x,
+      this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH,
+      this.transform.position.z
+    )
+    .setTarget(this.transform.position)
+    .play("fadein");
+    
+    window["animtrack"] = this.animTrack;
+
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
         attribute vec2 uv;
@@ -92,11 +154,9 @@ export class Chunk extends WorldComponent {
     this.entity.addComponent(this.rb);
     this.meshCollider = this.getOrCreateComponent(MeshCollider);
 
-
     this.generate();
     this.rebuild();
   }
-
   static positionToIndex(x: number, y: number, z: number): number {
     return (
       Math.floor(x) +

@@ -12,11 +12,22 @@ export let RigidBodyType;
 })(RigidBodyType || (RigidBodyType = {}));
 
 export class RigidBody extends WorldComponent {
+  setUpdateTransform(update = true) {
+    this._updateTransform = update;
+    return this;
+  }
+
+  get updateTramsform() {
+    return this._updateTransform;
+  }
+
   constructor() {
     super();
     this.velocity = new Vec3();
 
     this.onUpdate = () => {
+      if (!this._updateTransform) return;
+
       let v = this._rapierRigidBody.translation();
 
       this.transform.position.set(v.x, v.y, v.z);
@@ -37,11 +48,13 @@ export class RigidBody extends WorldComponent {
       x,
       y,
       z
-    } = this.transform.position; // console.log("RB", this.type, this.entity.label);
+    } = this.transform.position;
+    this.setUpdateTransform(true);
 
     switch (this._type) {
       case RigidBodyType.FIXED:
         this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.fixed();
+        this.setUpdateTransform(false);
         break;
 
       case RigidBodyType.KinematicPositionBased:

@@ -1,35 +1,50 @@
 import { Program } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder } from "../utils/meshbuilder.js";
-import { Block } from "../voxel/block.js"; // import { ChunkCollider } from "./chunkcollider.js";
-
+import { Block } from "../voxel/block.js";
+// import { ChunkCollider } from "./chunkcollider.js";
 import { Mesh } from "./mesh.js";
 import { MeshCollider } from "./meshcollider.js";
 import { RigidBody, RigidBodyType } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
+import { Vec3Animator } from "../utils/animators.js";
 export class Chunk extends WorldComponent {
   static getMeshBuilder() {
     if (!Chunk.chunkMeshBuilder) Chunk.chunkMeshBuilder = new MeshBuilder();
     return Chunk.chunkMeshBuilder;
   }
 
-  // chunkCollider: ChunkCollider;
   constructor() {
     super();
     this.data = new Uint8Array(Chunk.DATA_SIZE);
     this.renderBlock = new Block();
     this.neighborBlock = new Block();
     this.renderBlockSides = {};
+    this.animTrack = new Vec3Animator().createClip({
+      durationMillis: 1000,
+      start: 0,
+      end: 1,
+      fps: 5,
+      loop: false,
+      name: "fadein"
+    }).createClip({
+      durationMillis: 1000,
+      start: 1,
+      end: 2,
+      fps: 30,
+      loop: false,
+      name: "fadeout"
+    });
+  }
+
+  onReactivate() {
+    this.animTrack.setValueAtTime(0, this.transform.position.x, this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH, this.transform.position.z).setValueAtTime(1, this.transform.position.x, this.transform.position.y, this.transform.position.z).setValueAtTime(2, this.transform.position.x, this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH, this.transform.position.z);
   }
 
   onAttach() {
-    Globals.debugChunk = this; // let blocksTexture = TextureLoader.load(Globals.gl, {
-    //   src: "./textures/side_grass.png",
-    //   magFilter: Globals.gl.NEAREST,
-    //   // minFilter: Globals.gl.NEAREST
-    // });
-    // console.log(blocksTexture);
-
+    Globals.debugChunk = this;
+    this.animTrack.setValueAtTime(0, this.transform.position.x, this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH, this.transform.position.z).setValueAtTime(1, this.transform.position.x, this.transform.position.y, this.transform.position.z).setValueAtTime(2, this.transform.position.x, this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH, this.transform.position.z).setTarget(this.transform.position).play("fadein");
+    window["animtrack"] = this.animTrack;
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
         attribute vec2 uv;

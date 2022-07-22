@@ -67,8 +67,7 @@ async function main() {
 
   window.addEventListener('resize', resize, false);
   resize();
-  const scene = new WorldEntity();
-  scene.label = "Scene";
+  Globals.scene = new WorldEntity().setLabel("Scene");
   let atlasBuilder = new AtlasBuilder();
   atlasBuilder.init({
     faceSize: new Vec2(16, 16),
@@ -85,11 +84,15 @@ async function main() {
   await atlasBuilder.loadTexture("./textures/top_grass.png", BlockType.GRASS, BlockTextureSlot.UP);
   Globals.atlas = await atlasBuilder.build(); // console.log(Globals.atlas.texture);
 
-  const chunk = new WorldEntity().setLabel("Chunk").setParent(scene).addComponent(new Chunk()); // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
+  const chunk = new WorldEntity().setLabel("Chunk").setParent(Globals.scene).addComponent(new Chunk()); // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
-  const player = new WorldEntity().addComponent(new Player()).setParent(scene).setLabel("Player");
+  const player = new WorldEntity();
+  player.transform.position.x = Chunk.BLOCK_SIDE_LENGTH / 2;
+  player.transform.position.y = Chunk.BLOCK_SIDE_LENGTH;
+  player.transform.position.z = Chunk.BLOCK_SIDE_LENGTH / 2;
+  player.addComponent(new Player()).setParent(Globals.scene).setLabel("Player");
   camera.setParent(player.getComponent(PlayerController).cameraAttachPoint.transform._oglTransform);
-  sceneGraphDisplay.setRootNode(scene);
+  sceneGraphDisplay.setRootNode(Globals.scene);
   requestAnimationFrame(update);
 
   function update(t) {
@@ -97,7 +100,7 @@ async function main() {
     // mesh.rotation.x += 0.01;
 
     renderer.render({
-      scene: scene.transform,
+      scene: Globals.scene.transform,
       camera
     });
   }
@@ -105,7 +108,7 @@ async function main() {
   setInterval(() => {
     Globals._rapierWorld.step();
 
-    scene.onUpdate();
+    Globals.scene.onUpdate();
   }, Globals.delta);
 }
 

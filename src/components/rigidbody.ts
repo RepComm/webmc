@@ -38,11 +38,10 @@ export class RigidBody extends WorldComponent {
 
   onAttach(): void {
     let { x, y, z } = this.transform.position;
-    console.log("RB", this.type, this.entity.label);
+    // console.log("RB", this.type, this.entity.label);
     switch (this._type) {
       case RigidBodyType.FIXED:
         this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.fixed();
-        console.log("Fixed rb", this.entity.label);
         break;
       case RigidBodyType.KinematicPositionBased:
         this._rapierRigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased();

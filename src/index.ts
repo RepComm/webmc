@@ -92,8 +92,7 @@ async function main() {
   window.addEventListener('resize', resize, false);
   resize();
 
-  const scene = new WorldEntity();
-  scene.label = "Scene";
+  Globals.scene = new WorldEntity().setLabel("Scene");
 
   let atlasBuilder = new AtlasBuilder();
 
@@ -132,14 +131,18 @@ async function main() {
 
   const chunk = new WorldEntity()
   .setLabel("Chunk")
-  .setParent(scene)
+  .setParent(Globals.scene)
   .addComponent(new Chunk());
   
   // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
-  const player = new WorldEntity()
-    .addComponent(new Player())
-    .setParent(scene)
+  const player = new WorldEntity();
+  player.transform.position.x = Chunk.BLOCK_SIDE_LENGTH/2;
+  player.transform.position.y = Chunk.BLOCK_SIDE_LENGTH;
+  player.transform.position.z = Chunk.BLOCK_SIDE_LENGTH/2;
+  
+  player.addComponent(new Player())
+    .setParent(Globals.scene)
     .setLabel("Player");
   
   camera.setParent(
@@ -150,7 +153,7 @@ async function main() {
   );
   
 
-  sceneGraphDisplay.setRootNode(scene);
+  sceneGraphDisplay.setRootNode(Globals.scene);
 
   requestAnimationFrame(update);
   function update(t: number) {
@@ -158,12 +161,12 @@ async function main() {
 
     // chunkParent.transform.rotation.y += 0.005;
     // mesh.rotation.x += 0.01;
-    renderer.render({ scene: scene.transform, camera });
+    renderer.render({ scene: Globals.scene.transform, camera });
   }
 
   setInterval(()=>{
     Globals._rapierWorld.step();
-    scene.onUpdate();
+    Globals.scene.onUpdate();
   }, Globals.delta);
 }
 

@@ -23,12 +23,13 @@ export class Chunk extends WorldComponent {
   }
 
   onAttach() {
-    // let blocksTexture = TextureLoader.load(Globals.gl, {
+    Globals.debugChunk = this; // let blocksTexture = TextureLoader.load(Globals.gl, {
     //   src: "./textures/side_grass.png",
     //   magFilter: Globals.gl.NEAREST,
     //   // minFilter: Globals.gl.NEAREST
     // });
     // console.log(blocksTexture);
+
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
         attribute vec2 uv;
@@ -114,6 +115,25 @@ export class Chunk extends WorldComponent {
     }
 
     out.type = this.data[index];
+    return true;
+  }
+
+  setBlockData(b, x, y, z, checkBounds = true, rebuild = true) {
+    let index = 0;
+
+    if (!y || !z) {
+      index = x;
+    } else {
+      if (checkBounds && !Chunk.isPositionBounded(x, y, z)) {
+        return false;
+      }
+
+      index = Chunk.positionToIndex(x, y, z);
+    }
+
+    if (checkBounds && index < 0 || index > this.data.length) return false;
+    this.data[index] = b.type;
+    if (rebuild) this.rebuild();
     return true;
   }
 

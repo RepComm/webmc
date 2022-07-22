@@ -6,9 +6,13 @@ import { SphereCollider } from "./spherecollider.js";
 import { Player } from "./player.js";
 import { RigidBody } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
+import { DebugEntity } from "../entities/debugentity.js";
+import { Block } from "../voxel/block.js";
 export class PlayerController extends WorldComponent {
   constructor() {
     super();
+    this.debugEntity = new DebugEntity();
+    this.debugEntity.setActive(true);
     this.movement = new Vec3();
     this.speed = 1;
     this.lookSensitivity = 0.001;
@@ -26,6 +30,8 @@ export class PlayerController extends WorldComponent {
       y: -1.0,
       z: 0.0
     });
+    this.rayDir = new Vec3();
+    this.block = new Block();
 
     this.onUpdate = () => {
       if (this.rb) {
@@ -34,6 +40,37 @@ export class PlayerController extends WorldComponent {
           let ry = this.input.builtinMovementConsumer.getDeltaY();
           this.cameraAttachPoint.transform.rotation.x -= ry * this.lookSensitivity;
           this.entity.transform.rotation.y -= rx * this.lookSensitivity; // this.cameraAttachPoint.transform.rotation.y -= rx * this.lookSensitivity;
+
+          let block = this.input.getAxisValue("block");
+
+          if (block > 0.5) {
+            let {
+              x,
+              y,
+              z
+            } = this.transform.position;
+            this.ray.origin.x = x;
+            this.ray.origin.y = y;
+            this.ray.origin.z = z;
+            this.rayDir.set(0, 0, -1);
+            this.rayDir.applyQuaternion(this.cameraAttachPoint.transform.quaternion);
+            this.rayDir.applyQuaternion(this.entity.transform.quaternion);
+            this.ray.dir.x = this.rayDir.x;
+            this.ray.dir.y = this.rayDir.y;
+            this.ray.dir.z = this.rayDir.z;
+
+            let hit = Globals._rapierWorld.castRay(this.ray, 16, false, undefined, undefined, undefined, this.rb._rapierRigidBody);
+
+            if (hit !== null) {
+              let hitPoint = this.ray.pointAt(hit.toi);
+              hitPoint.x = Math.floor(hitPoint.x);
+              hitPoint.y = Math.floor(hitPoint.y);
+              hitPoint.z = Math.floor(hitPoint.z);
+              this.debugEntity.transform.position.set(hitPoint.x, hitPoint.y, hitPoint.z);
+              this.block.type = 0;
+              Globals.debugChunk.setBlockData(this.block, hitPoint.x, hitPoint.y, hitPoint.z, true);
+            }
+          } else if (block < -0.5) {}
         } else {
           if (this.input.raw.getPointerButton(0)) {
             this.input.raw.pointerTryLock(Globals.gl.canvas);
@@ -49,13 +86,7 @@ export class PlayerController extends WorldComponent {
           this.rb.applyImpulse(this.movement);
         }
 
-        this.movement.set(strafe, 0, fwd).applyQuaternion(this.entity.transform.quaternion).normalize() // .multiply(fwd)
-        .multiply(this.speed); // this.movement.x = strafe;
-        // this.movement.z = fwd;
-        // this.movement.y = 0.0;
-        // this.movement.normalize();
-        // this.movement.multiply(this.speed);
-
+        this.movement.set(strafe, 0, fwd).applyQuaternion(this.entity.transform.quaternion).normalize().multiply(this.speed);
         this.rb.applyImpulse(this.movement, true);
         if (this.canJump()) this.jump();
       }
@@ -84,7 +115,10 @@ export class PlayerController extends WorldComponent {
     } = this.transform.position;
     this.ray.origin.x = x;
     this.ray.origin.y = y + 0.1;
-    this.ray.origin.z = z; // this.ray.dir
+    this.ray.origin.z = z;
+    this.ray.dir.x = 0;
+    this.ray.dir.y = -1;
+    this.ray.dir.z = 0; // this.ray.dir
 
     return Globals._rapierWorld.castRay(this.ray, 1.5, true, undefined, undefined, undefined, this.rb._rapierRigidBody) !== null;
   }
@@ -115,6 +149,13 @@ export class PlayerController extends WorldComponent {
     this.input.getOrCreateAxis("jump").addInfluence({
       value: 1,
       keys: [" "]
+    });
+    this.input.getOrCreateAxis("block").addInfluence({
+      value: 1,
+      mouseButtons: [0]
+    }).addInfluence({
+      value: -1,
+      mouseButtons: [1]
     });
   }
 

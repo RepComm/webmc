@@ -39,7 +39,7 @@ export class Chunk extends WorldComponent {
     this.renderBlockSides = {};
   }
   onAttach(): void {
-
+    Globals.debugChunk = this;
     // let blocksTexture = TextureLoader.load(Globals.gl, {
     //   src: "./textures/side_grass.png",
     //   magFilter: Globals.gl.NEAREST,
@@ -133,6 +133,21 @@ export class Chunk extends WorldComponent {
       index = Chunk.positionToIndex(x, y, z);
     }
     out.type = this.data[index];
+    return true;
+  }
+  setBlockData(b: Block, x: number, y?: number, z?: number, checkBounds: boolean = true, rebuild: boolean = true): boolean {
+    let index = 0;
+    if (!y || !z) {
+      index = x;
+    } else {
+      if (checkBounds && !Chunk.isPositionBounded(x, y, z)) {
+        return false;
+      }
+      index = Chunk.positionToIndex(x, y, z);
+    }
+    if (checkBounds && index < 0 || index > this.data.length) return false;
+    this.data[index] = b.type;
+    if (rebuild) this.rebuild();
     return true;
   }
   generate() {

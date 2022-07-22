@@ -31,14 +31,13 @@ export class MeshCollider extends WorldComponent {
     this.tryRecalc();
   }
   tryRecalc () {
-    console.log("Try recalc");
     //only recalculate if we have enough data
     if (this.vertices && this.indices && this.rb) {
 
       //clean up first
       this.tryCleanup();
 
-      console.log("mesh collider rebuild mesh", this.vertices, this.indices);
+      // console.log("mesh collider rebuild mesh", this.vertices, this.indices);
       //then create new things
       this._rapierColliderDesc = RAPIER.ColliderDesc.trimesh(
         this.vertices, this.indices

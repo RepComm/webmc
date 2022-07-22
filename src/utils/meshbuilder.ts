@@ -1,4 +1,5 @@
 import type { Vec2, Vec3 } from "ogl-typescript";
+import { Globals } from "./global.js";
 
 export interface MeshBuilderBuildResult {
   vs: Float32Array;
@@ -70,7 +71,7 @@ export class MeshBuilder {
     this.inds.push(1);
     return this;
   }
-  oop_point (pos: Vec3, uv?: Vec2, normal?: Vec3): this {
+  oop_point(pos: Vec3, uv?: Vec2, normal?: Vec3): this {
     this.point(pos.x, pos.y, pos.z, uv?.x, uv?.y, normal?.x, normal?.y, normal?.z);
     return this;
   }
@@ -104,15 +105,15 @@ export class MeshBuilder {
     );
 
     this.ns.push(
-      nax||0, nay||0, naz||0,
-      nbx||0, nby||0, nbz||0,
-      ncx||0, ncy||0, ncz||0,
+      nax || 0, nay || 0, naz || 0,
+      nbx || 0, nby || 0, nbz || 0,
+      ncx || 0, ncy || 0, ncz || 0,
     );
 
-    let i=this.inds.length;
-    this.inds.push(i, i+1, i+2);
+    let i = this.inds.length;
+    this.inds.push(i, i + 1, i + 2);
   }
-  oop_tri (
+  oop_tri(
     a: Vec3, b: Vec3, c: Vec3,
     auv?: Vec2, buv?: Vec2, cuv?: Vec2,
     an?: Vec3, bn?: Vec3, cn?: Vec3
@@ -131,12 +132,14 @@ export class MeshBuilder {
     return this;
   }
   /**
+   * ```
    * 0,0    1,0
    *   a----b
    *   |  / |
    *   | /  |
    *   c----d
    * 0,1    1,1
+   * ```
    */
   quad(
     ax: number, ay: number, az: number,
@@ -149,7 +152,7 @@ export class MeshBuilder {
     cu?: number, cv?: number,
     du?: number, dv?: number,
 
-    nax?:number, nay?: number, naz?: number,
+    nax?: number, nay?: number, naz?: number,
     nbx?: number, nby?: number, nbz?: number,
     ncx?: number, ncy?: number, ncz?: number,
     ndx?: number, ndy?: number, ndz?: number
@@ -182,7 +185,7 @@ export class MeshBuilder {
 
     );
   }
-  oop_quad (
+  oop_quad(
     a: Vec3, b: Vec3, c: Vec3, d: Vec3,
     auv?: Vec2, buv?: Vec2, cuv?: Vec2, duv?: Vec2,
     an?: Vec3, bn?: Vec3, cn?: Vec3, dn?: Vec3
@@ -212,13 +215,38 @@ export class MeshBuilder {
     let maxy = miny + h;
     let maxz = minz + d;
 
+    let blockId = Math.floor(Math.random() * 3)+1;
+    let uvquad = Globals.atlas.type[blockId][0];
+
+    let umin = uvquad.x;
+    let umax = umin + uvquad.w;
+    let vmin = 1 - uvquad.y;
+    let vmax = vmin - uvquad.h;
+
+    let au = umin;
+    let av = vmin;
+
+    let bu = umax;
+    let bv = vmin;
+
+    let cu = umin;
+    let cv = vmax;
+
+    let du = umax;
+    let dv = vmax;
+
     if (sides.top_Y) {
       //top (+Y) (use maxy)
       this.quad(
         minx, maxy, minz, //a
         minx, maxy, maxz, //c
         maxx, maxy, minz, //b
-        maxx, maxy, maxz  //d
+        maxx, maxy, maxz,  //d
+
+        au, av, 
+        bu, bv, 
+        cu, cv, 
+        du, dv
       );
     }
 
@@ -228,7 +256,12 @@ export class MeshBuilder {
         minx, miny, minz, //a
         maxx, miny, minz, //b
         minx, miny, maxz, //c
-        maxx, miny, maxz  //d
+        maxx, miny, maxz,  //d
+
+        au, av, 
+        bu, bv, 
+        cu, cv, 
+        du, dv
       );
     }
 
@@ -238,7 +271,12 @@ export class MeshBuilder {
         minx, miny, maxz, //a
         maxx, miny, maxz, //b
         minx, maxy, maxz, //c
-        maxx, maxy, maxz  //d
+        maxx, maxy, maxz,  //d
+
+        au, av, 
+        bu, bv, 
+        cu, cv, 
+        du, dv
       );
     }
 
@@ -248,7 +286,12 @@ export class MeshBuilder {
         minx, miny, minz, //a
         minx, maxy, minz, //c
         maxx, miny, minz, //b
-        maxx, maxy, minz  //d
+        maxx, maxy, minz,  //d
+
+        au, av, 
+        bu, bv, 
+        cu, cv, 
+        du, dv
       );
     }
 
@@ -258,7 +301,12 @@ export class MeshBuilder {
         minx, miny, minz, //a
         minx, miny, maxz, //c
         minx, maxy, minz, //b
-        minx, maxy, maxz  //d
+        minx, maxy, maxz,  //d
+
+        au, av, 
+        bu, bv,
+        cu, cv, 
+        du, dv
       );
     }
 
@@ -268,7 +316,12 @@ export class MeshBuilder {
         maxx, miny, minz, //a
         maxx, maxy, minz, //b
         maxx, miny, maxz, //c
-        maxx, maxy, maxz  //d
+        maxx, maxy, maxz,  //d
+
+        au, av, 
+        bu, bv, 
+        cu, cv, 
+        du, dv
       );
     }
 

@@ -22,12 +22,11 @@ export class MeshCollider extends WorldComponent {
   }
 
   tryRecalc() {
-    console.log("Try recalc"); //only recalculate if we have enough data
-
+    //only recalculate if we have enough data
     if (this.vertices && this.indices && this.rb) {
       //clean up first
-      this.tryCleanup();
-      console.log("mesh collider rebuild mesh", this.vertices, this.indices); //then create new things
+      this.tryCleanup(); // console.log("mesh collider rebuild mesh", this.vertices, this.indices);
+      //then create new things
 
       this._rapierColliderDesc = RAPIER.ColliderDesc.trimesh(this.vertices, this.indices).setTranslation(this._offset.x, this._offset.y, this._offset.z);
       this._rapierCollider = Globals._rapierWorld.createCollider(this._rapierColliderDesc, this.rb._rapierRigidBody);

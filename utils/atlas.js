@@ -71,8 +71,7 @@ export class AtlasBuilder {
         document.body.appendChild(img);
 
         img.onload = () => {
-          console.log("image loaded from url", url, img);
-
+          // console.log("image loaded from url", url, img);
           _this.addTexture(img, type, slotid);
 
           img.remove();
@@ -91,7 +90,9 @@ export class AtlasBuilder {
     this.atlas = {
       texture: null,
       type: {},
-      faceSize: new Vec2().copy(this.config.faceSize)
+      faceSize: new Vec2().copy(this.config.faceSize),
+      width: this.config.width,
+      height: this.config.height
     };
   }
 
@@ -145,7 +146,8 @@ export class AtlasBuilder {
         image.onload = () => {
           _this2.atlas.texture = new Texture(Globals.gl, {
             image,
-            magFilter: Globals.gl.NEAREST
+            magFilter: Globals.gl.NEAREST,
+            minFilter: Globals.gl.NEAREST
           });
 
           _this2.setCanvasActivation(false);

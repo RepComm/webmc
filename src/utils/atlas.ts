@@ -28,6 +28,8 @@ export interface Atlas {
     [key in BlockType]?: BlockUVs;
   };
   faceSize: Vec2;
+  width: number;
+  height: number;
 }
 
 export type BlockTextureSlot = number;
@@ -101,7 +103,7 @@ export class AtlasBuilder {
         img.src = url;
         document.body.appendChild(img);
         img.onload = ()=>{
-          console.log("image loaded from url", url, img);
+          // console.log("image loaded from url", url, img);
           this.addTexture(img, type, slotid);
           img.remove();
           _resolve();
@@ -116,7 +118,9 @@ export class AtlasBuilder {
     this.atlas = {
       texture: null,
       type: {},
-      faceSize: new Vec2().copy(this.config.faceSize)
+      faceSize: new Vec2().copy(this.config.faceSize),
+      width: this.config.width,
+      height: this.config.height
     };
   }
   setCanvasActivation(active: boolean) {
@@ -172,7 +176,8 @@ export class AtlasBuilder {
         image.onload = ()=>{
           this.atlas.texture = new Texture(Globals.gl, {
             image,
-            magFilter: Globals.gl.NEAREST 
+            magFilter: Globals.gl.NEAREST,
+            minFilter: Globals.gl.NEAREST
           });
           this.setCanvasActivation(false);
           _resolve( this.atlas );

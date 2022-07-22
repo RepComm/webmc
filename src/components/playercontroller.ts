@@ -82,13 +82,18 @@ export class PlayerController extends WorldComponent {
             this.ray.dir.z = this.rayDir.z;
 
             let hit = Globals._rapierWorld
-              .castRay(
+              .castRayAndGetNormal(
                 this.ray, 16, false,
                 undefined, undefined, undefined,
                 this.rb._rapierRigidBody
               );
             if (hit !== null) {
               let hitPoint = this.ray.pointAt(hit.toi);
+              
+              hitPoint.x -= hit.normal.x/2;
+              hitPoint.y -= hit.normal.y/2;
+              hitPoint.z -= hit.normal.z/2;
+
               hitPoint.x = Math.floor(hitPoint.x);
               hitPoint.y = Math.floor(hitPoint.y);
               hitPoint.z = Math.floor(hitPoint.z);

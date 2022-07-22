@@ -1,4 +1,3 @@
-import { Globals } from "./global.js";
 export const MeshBuilderCubeSidesALL = {
   /** should top quad be created (+Y)*/
   top_Y: true,
@@ -86,24 +85,28 @@ export class MeshBuilder {
     this.quad(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, d.x, d.y, d.z, auv === null || auv === void 0 ? void 0 : auv.x, auv === null || auv === void 0 ? void 0 : auv.y, buv === null || buv === void 0 ? void 0 : buv.x, buv === null || buv === void 0 ? void 0 : buv.y, cuv === null || cuv === void 0 ? void 0 : cuv.x, cuv === null || cuv === void 0 ? void 0 : cuv.y, duv === null || duv === void 0 ? void 0 : duv.x, duv === null || duv === void 0 ? void 0 : duv.y, an === null || an === void 0 ? void 0 : an.x, an === null || an === void 0 ? void 0 : an.y, an === null || an === void 0 ? void 0 : an.z, bn === null || bn === void 0 ? void 0 : bn.x, bn === null || bn === void 0 ? void 0 : bn.y, bn === null || bn === void 0 ? void 0 : bn.z, cn === null || cn === void 0 ? void 0 : cn.x, cn === null || cn === void 0 ? void 0 : cn.y, cn === null || cn === void 0 ? void 0 : cn.z, dn === null || dn === void 0 ? void 0 : dn.x, dn === null || dn === void 0 ? void 0 : dn.y, dn === null || dn === void 0 ? void 0 : dn.z);
   }
 
-  cube(minx, miny, minz, w, h, d, sides = MeshBuilderCubeSidesALL) {
+  cube(minx, miny, minz, w, h, d, sides = MeshBuilderCubeSidesALL, au, av, bu, bv, cu, cv, du, dv) {
     let maxx = minx + w;
     let maxy = miny + h;
-    let maxz = minz + d;
-    let blockId = Math.floor(Math.random() * 3) + 1;
-    let uvquad = Globals.atlas.type[blockId][0];
-    let umin = uvquad.x;
-    let umax = umin + uvquad.w;
-    let vmin = 1 - uvquad.y;
-    let vmax = vmin - uvquad.h;
-    let au = umin;
-    let av = vmin;
-    let bu = umax;
-    let bv = vmin;
-    let cu = umin;
-    let cv = vmax;
-    let du = umax;
-    let dv = vmax;
+    let maxz = minz + d; // let blockId = Math.floor(Math.random() * 3)+1;
+    // let uvquad = Globals.atlas.type[blockId][0];
+    // let umin = uvquad.x;
+    // let umax = umin + uvquad.w;
+    // let vmin = 1 - uvquad.y;
+    // let vmax = vmin - uvquad.h;
+
+    let umin = 0;
+    let umax = 1;
+    let vmin = 1;
+    let vmax = 1;
+    if (!au) au = umin;
+    if (!av) av = vmin;
+    if (!bu) bu = umax;
+    if (!bv) bv = vmin;
+    if (!cu) cu = umin;
+    if (!cv) cv = vmax;
+    if (!du) du = umax;
+    if (!dv) dv = vmax;
 
     if (sides.top_Y) {
       //top (+Y) (use maxy)

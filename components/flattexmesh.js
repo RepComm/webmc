@@ -71,13 +71,25 @@ export class FlatTexMesh extends WorldComponent {
     if (!this.imgdata) return;
     if (!FlatTexMesh.meshBuilder) FlatTexMesh.meshBuilder = new MeshBuilder();
     FlatTexMesh.meshBuilder.clear();
+    let ix = 1 / this.imgdata.width;
+    let iy = 1 / this.imgdata.height;
+    let umin;
+    let umax;
+    let vmin;
+    let vmax;
 
     for (let x = 0; x < this.imgdata.width; x++) {
       for (let y = 0; y < this.imgdata.height; y++) {
         this.rgbaPick(this.current, x, y);
         if (this.rgbaIsTransparent(this.current)) continue;
         this.neighbors(this.sides, x, y);
-        FlatTexMesh.meshBuilder.cube(x / this.imgdata.width * this.size.x, y / this.imgdata.height * this.size.y, 0, 1 / this.imgdata.width * this.size.x, 1 / this.imgdata.height * this.size.y, this.size.z, this.sides);
+        let nx = x / this.imgdata.width;
+        let ny = y / this.imgdata.height;
+        umin = nx;
+        umax = umin + ix;
+        vmin = 1 - ny;
+        vmax = vmin - iy;
+        FlatTexMesh.meshBuilder.cube(nx * this.size.x, ny * this.size.y, 0, ix * this.size.x, iy * this.size.y, this.size.z, this.sides, umin, vmin, umax, vmin, umin, vmax, umax, vmax);
       }
     }
 
@@ -138,8 +150,7 @@ export class FlatTexMesh extends WorldComponent {
           uniforms: {
             tMap: {
               value: _this.texture
-            } // tMap: { value: blocksTexture },
-
+            }
           }
         });
         if (_this.mesh) _this.rebuild();

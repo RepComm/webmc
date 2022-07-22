@@ -208,32 +208,41 @@ export class MeshBuilder {
   cube(
     minx: number, miny: number, minz: number,
     w: number, h: number, d: number,
-    sides: MeshBuilderCubeSides = MeshBuilderCubeSidesALL
+    sides: MeshBuilderCubeSides = MeshBuilderCubeSidesALL,
+    au?: number, av?: number,
+    bu?: number, bv?: number,
+    cu?: number, cv?: number,
+    du?: number, dv?: number
   ): this {
 
     let maxx = minx + w;
     let maxy = miny + h;
     let maxz = minz + d;
 
-    let blockId = Math.floor(Math.random() * 3)+1;
-    let uvquad = Globals.atlas.type[blockId][0];
+    // let blockId = Math.floor(Math.random() * 3)+1;
+    // let uvquad = Globals.atlas.type[blockId][0];
 
-    let umin = uvquad.x;
-    let umax = umin + uvquad.w;
-    let vmin = 1 - uvquad.y;
-    let vmax = vmin - uvquad.h;
+    // let umin = uvquad.x;
+    // let umax = umin + uvquad.w;
+    // let vmin = 1 - uvquad.y;
+    // let vmax = vmin - uvquad.h;
 
-    let au = umin;
-    let av = vmin;
+    let umin = 0;
+    let umax = 1;
+    let vmin = 1;
+    let vmax = 1;
 
-    let bu = umax;
-    let bv = vmin;
+    if (!au)au = umin;
+    if (!av)av = vmin;
 
-    let cu = umin;
-    let cv = vmax;
+    if (!bu)bu = umax;
+    if (!bv)bv = vmin;
 
-    let du = umax;
-    let dv = vmax;
+    if (!cu)cu = umin;
+    if (!cv)cv = vmax;
+
+    if (!du)du = umax;
+    if (!dv)dv = vmax;
 
     if (sides.top_Y) {
       //top (+Y) (use maxy)

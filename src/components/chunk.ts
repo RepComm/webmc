@@ -1,5 +1,6 @@
 
 import { Program, TextureLoader, Vec2, Vec3 } from "ogl-typescript";
+import { UVQuad } from "../utils/atlas.js";
 import { Globals } from "../utils/global.js";
 import { MeshBuilder, MeshBuilderCubeSides } from "../utils/meshbuilder.js";
 import { Block } from "../voxel/block.js";
@@ -151,12 +152,13 @@ export class Chunk extends WorldComponent {
     return true;
   }
   generate() {
+    let types = Object.keys(Globals.atlas.type).length;
     for (let x = 0; x < Chunk.BLOCK_SIDE_LENGTH; x++) {
       for (let y = 0; y < Chunk.BLOCK_SIDE_LENGTH; y++) {
         for (let z = 0; z < Chunk.BLOCK_SIDE_LENGTH; z++) {
           let i = Chunk.positionToIndex(x, y, z);
           if (x >= y) {
-            this.data[i] = 1;
+            this.data[i] = Math.floor(Math.random() * types)+1;
           } else {
             this.data[i] = 0;
           }
@@ -168,11 +170,26 @@ export class Chunk extends WorldComponent {
     let mb = Chunk.getMeshBuilder();
     mb.clear();
 
+    // let blockId = Math.floor(Math.random() * 3)+1;
+    let uvquad: UVQuad;
+    
+    let umin: number;
+    let umax: number;
+    let vmin: number;
+    let vmax: number;
+    
+    
     for (let x = 0; x < Chunk.BLOCK_SIDE_LENGTH; x++) {
       for (let y = 0; y < Chunk.BLOCK_SIDE_LENGTH; y++) {
         for (let z = 0; z < Chunk.BLOCK_SIDE_LENGTH; z++) {
           this.getBlockData(this.renderBlock, x, y, z);
           if (this.renderBlock.type === 0) continue;
+          uvquad = Globals.atlas.type[this.renderBlock.type][0];
+          umin = uvquad.x;
+          umax = umin + uvquad.w;
+          vmin = 1 - uvquad.y;
+          vmax = vmin - uvquad.h;
+                
           this.renderBlockSides.back_ZN = true;
           this.renderBlockSides.front_Z = true;
           this.renderBlockSides.left_XN = true;
@@ -188,7 +205,22 @@ export class Chunk extends WorldComponent {
           if (this.getBlockData(this.neighborBlock, x - 1, y, z)) this.renderBlockSides.left_XN = this.neighborBlock.revealsNeighbors;
           if (this.getBlockData(this.neighborBlock, x + 1, y, z)) this.renderBlockSides.right_X = this.neighborBlock.revealsNeighbors;
 
-          mb.cube(x, y, z, 1, 1, 1, this.renderBlockSides);
+          mb.cube(
+            x, y, z, 
+            1, 1, 1, 
+            this.renderBlockSides,
+            umin,
+            vmin,
+
+            umax,
+            vmin,
+
+            umin,
+            vmax,
+
+            umax,
+            vmax,
+          );
 
         }
       }

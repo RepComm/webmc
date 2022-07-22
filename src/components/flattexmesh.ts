@@ -86,22 +86,50 @@ export class FlatTexMesh extends WorldComponent {
     if (!FlatTexMesh.meshBuilder) FlatTexMesh.meshBuilder = new MeshBuilder();
     FlatTexMesh.meshBuilder.clear();
   
+    let ix = 1/this.imgdata.width;
+    let iy = 1/this.imgdata.height;
+
+    let umin: number;
+    let umax: number;
+    let vmin: number;
+    let vmax: number;
+
     for (let x=0; x<this.imgdata.width; x++) {
       for (let y=0; y<this.imgdata.height; y++) {
         this.rgbaPick(this.current, x, y);
 
         if (this.rgbaIsTransparent(this.current)) continue;
         this.neighbors(this.sides, x, y);
+        
+        let nx = x/this.imgdata.width;
+        let ny = y/this.imgdata.height;
+
+        umin = nx;
+        umax = umin + ix;
+        vmin = 1 - ny;
+        vmax = vmin - iy;
 
         FlatTexMesh.meshBuilder.cube(
-          x/this.imgdata.width * this.size.x,
-          y/this.imgdata.height * this.size.y,
+          nx * this.size.x,
+          ny * this.size.y,
           0,
   
-          1/this.imgdata.width * this.size.x,
-          1/this.imgdata.height * this.size.y,
+          ix * this.size.x,
+          iy * this.size.y,
           this.size.z,
-          this.sides
+          this.sides,
+
+          umin,
+          vmin,
+
+          umax,
+          vmin,
+
+          umin,
+          vmax,
+
+          umax,
+          vmax,
         );
 
       }

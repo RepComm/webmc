@@ -17,11 +17,16 @@ export class RigidBody extends WorldComponent {
 
   private _type: RigidBodyType;
 
+  velocity: Vec3;
+
   constructor() {
     super();
+    this.velocity = new Vec3();
+
     this.onUpdate = () => {
       let v = this._rapierRigidBody.translation();
       this.transform.position.set(v.x, v.y, v.z);
+      this.linvel(this.velocity);
     };
     this.type = RigidBodyType.DYNAMIC;
   }
@@ -55,6 +60,13 @@ export class RigidBody extends WorldComponent {
     this._rapierRigidBody = Globals._rapierWorld.createRigidBody(
       this._rapierRigidBodyDesc
     );
+  }
+  linvel (out: Vec3): this {
+    let v = this._rapierRigidBody.linvel();
+    out.x = v.x;
+    out.y = v.y;
+    out.z = v.z;
+    return this;
   }
   onDetach(): void {
     Globals._rapierWorld.removeRigidBody(this._rapierRigidBody);

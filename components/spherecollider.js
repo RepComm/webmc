@@ -3,16 +3,21 @@ import { RigidBody } from "./rigidbody.js";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { Vec3 } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
-export class CubeCollider extends WorldComponent {
-  constructor() {
+export class SphereCollider extends WorldComponent {
+  constructor(r = 0.4) {
     super();
-    this._size = new Vec3(1, 1, 1);
+    this._radius = r;
     this._offset = new Vec3();
+  }
+
+  setRadius(r) {
+    this._radius = r;
+    return this;
   }
 
   onAttach() {
     this.rb = this.getComponent(RigidBody);
-    this._rapierColliderDesc = RAPIER.ColliderDesc.cuboid(this._size.x / 2, this._size.y / 2, this._size.z / 2).setTranslation(this._offset.x, this._offset.y, this._offset.z);
+    this._rapierColliderDesc = RAPIER.ColliderDesc.ball(this._radius).setTranslation(this._offset.x, this._offset.y, this._offset.z);
 
     if (this.rb) {
       this._rapierCollider = Globals._rapierWorld.createCollider(this._rapierColliderDesc, this.rb._rapierRigidBody);
@@ -25,7 +30,7 @@ export class CubeCollider extends WorldComponent {
 
   onReactivate() {
     this.rb = this.getComponent(RigidBody);
-    this._rapierColliderDesc = RAPIER.ColliderDesc.cuboid(this._size.x, this._size.y, this._size.z).setTranslation(this._offset.x, this._offset.y, this._offset.z);
+    this._rapierColliderDesc = RAPIER.ColliderDesc.ball(this._radius).setTranslation(this._offset.x, this._offset.y, this._offset.z);
 
     if (this.rb) {
       this._rapierCollider = Globals._rapierWorld.createCollider(this._rapierColliderDesc, this.rb._rapierRigidBody);

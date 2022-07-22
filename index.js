@@ -10,6 +10,7 @@ import { SceneGraph } from "./ui/scenegraph.js";
 import { Globals } from "./utils/global.js";
 import { AtlasBuilder } from "./utils/atlas.js";
 import { BlockTextureSlot, BlockType } from "./voxel/blockdef.js";
+import { PlayerController } from "./components/playercontroller.js";
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
 
@@ -54,8 +55,8 @@ async function main() {
   gl.canvas.style["max-height"] = "100%";
   Globals.gl = gl;
   const camera = new Camera(gl);
-  camera.position.z = Chunk.BLOCK_SIDE_LENGTH + 5;
-  camera.position.y = 2;
+  camera.position.z = 4;
+  camera.position.y = 1;
 
   function resize() {
     renderer.setSize(container.rect.width, container.rect.height);
@@ -72,8 +73,7 @@ async function main() {
   atlasBuilder.init({
     faceSize: new Vec2(16, 16),
     width: 16 * 4,
-    height: 16 //*4
-
+    height: 16 * 4
   }); // await atlasBuilder.loadTexture(
   //   "./textures/block-unknown.png",
   //   BlockType.UNKNOWN, BlockTextureSlot.MAIN
@@ -83,12 +83,12 @@ async function main() {
   await atlasBuilder.loadTexture("./textures/all_dirt.png", BlockType.DIRT, BlockTextureSlot.MAIN);
   await atlasBuilder.loadTexture("./textures/side_grass.png", BlockType.GRASS, BlockTextureSlot.SIDE);
   await atlasBuilder.loadTexture("./textures/top_grass.png", BlockType.GRASS, BlockTextureSlot.UP);
-  Globals.atlas = await atlasBuilder.build();
-  console.log(Globals.atlas.texture);
+  Globals.atlas = await atlasBuilder.build(); // console.log(Globals.atlas.texture);
+
   const chunk = new WorldEntity().setLabel("Chunk").setParent(scene).addComponent(new Chunk()); // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
   const player = new WorldEntity().addComponent(new Player()).setParent(scene).setLabel("Player");
-  camera.setParent(player.transform);
+  camera.setParent(player.getComponent(PlayerController).cameraAttachPoint.transform._oglTransform);
   sceneGraphDisplay.setRootNode(scene);
   requestAnimationFrame(update);
 

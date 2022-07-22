@@ -1,6 +1,7 @@
 import { WorldComponent } from "./worldcomponent.js";
 import { Globals } from "../utils/global.js";
 import RAPIER from "@dimforge/rapier3d-compat";
+import { Vec3 } from "ogl-typescript";
 export let RigidBodyType;
 
 (function (RigidBodyType) {
@@ -13,11 +14,13 @@ export let RigidBodyType;
 export class RigidBody extends WorldComponent {
   constructor() {
     super();
+    this.velocity = new Vec3();
 
     this.onUpdate = () => {
       let v = this._rapierRigidBody.translation();
 
       this.transform.position.set(v.x, v.y, v.z);
+      this.linvel(this.velocity);
     };
 
     this.type = RigidBodyType.DYNAMIC;
@@ -61,6 +64,15 @@ export class RigidBody extends WorldComponent {
     this._rapierRigidBodyDesc.setTranslation(x, y, z);
 
     this._rapierRigidBody = Globals._rapierWorld.createRigidBody(this._rapierRigidBodyDesc);
+  }
+
+  linvel(out) {
+    let v = this._rapierRigidBody.linvel();
+
+    out.x = v.x;
+    out.y = v.y;
+    out.z = v.z;
+    return this;
   }
 
   onDetach() {

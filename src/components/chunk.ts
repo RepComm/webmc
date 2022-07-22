@@ -85,12 +85,12 @@ export class Chunk extends WorldComponent {
     this.mesh = new Mesh(chunkMaterial);
     this.entity.addComponent(this.mesh);
     // this.mesh = this.getOrCreateComponent(Mesh);
-    
+
     this.rb = new RigidBody();
     this.rb.type = RigidBodyType.FIXED;
     this.entity.addComponent(this.rb);
     this.meshCollider = this.getOrCreateComponent(MeshCollider);
-    
+
 
     this.generate();
     this.rebuild();
@@ -136,9 +136,9 @@ export class Chunk extends WorldComponent {
     return true;
   }
   generate() {
-    for (let x=0;x<Chunk.BLOCK_SIDE_LENGTH;x++) {
-      for (let y=0;y<Chunk.BLOCK_SIDE_LENGTH;y++) {
-        for (let z=0;z<Chunk.BLOCK_SIDE_LENGTH;z++) {
+    for (let x = 0; x < Chunk.BLOCK_SIDE_LENGTH; x++) {
+      for (let y = 0; y < Chunk.BLOCK_SIDE_LENGTH; y++) {
+        for (let z = 0; z < Chunk.BLOCK_SIDE_LENGTH; z++) {
           let i = Chunk.positionToIndex(x, y, z);
           if (x >= y) {
             this.data[i] = 1;

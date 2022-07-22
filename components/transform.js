@@ -1,5 +1,6 @@
 import { Component } from "../ecs.js";
 import { Transform as OGLTransform } from "ogl-typescript";
+import { WorldEntity } from "../entities/worldentity.js";
 export const ESC_COMPONENT_NAMESPACE = "__ecs_component";
 export class Transform extends Component {
   get entity() {
@@ -14,13 +15,9 @@ export class Transform extends Component {
     super();
     this._oglTransform = new OGLTransform();
     this._oglTransform[ESC_COMPONENT_NAMESPACE] = this;
-    Object.assign(this, this._oglTransform);
-
-    this.setParent = (...a) => this._oglTransform.setParent(...a);
-
-    this.addChild = (...a) => this._oglTransform.addChild(...a);
-
-    this.removeChild = (...a) => this._oglTransform.removeChild(...a);
+    Object.assign(this, this._oglTransform); // this.setParent = (...a) => this._oglTransform.setParent(...a);
+    // this.addChild = (...a) => this._oglTransform.addChild(...a);
+    // this.removeChild = (...a) => this._oglTransform.removeChild(...a);
 
     this.updateMatrixWorld = (...a) => this._oglTransform.updateMatrixWorld(...a);
 
@@ -31,6 +28,36 @@ export class Transform extends Component {
     this.decompose = (...a) => this._oglTransform.decompose(...a);
 
     this.lookAt = (...a) => this._oglTransform.lookAt(...a);
+  }
+
+  setParent(parent, notifyParent) {
+    if (parent instanceof WorldEntity) {
+      this._oglTransform.setParent(parent.transform._oglTransform, notifyParent);
+    } else {
+      this._oglTransform.setParent(parent, notifyParent);
+    }
+
+    return this;
+  }
+
+  addChild(child, notifyChild) {
+    if (child instanceof WorldEntity) {
+      this._oglTransform.addChild(child.transform, notifyChild);
+    } else {
+      this._oglTransform.addChild(child, notifyChild);
+    }
+
+    return this;
+  }
+
+  removeChild(child, notifyChild) {
+    if (child instanceof WorldEntity) {
+      this._oglTransform.removeChild(child.transform, notifyChild);
+    } else {
+      this._oglTransform.removeChild(child, notifyChild);
+    }
+
+    return this;
   }
 
 }

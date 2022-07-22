@@ -62,7 +62,10 @@ export class WorldEntity extends Entity {
   }
   getOrCreateChildByLabel (label: string, ignoreCase: boolean = true): WorldEntity {
     let child = this.getChildByLabel(label, ignoreCase);
-    if (!child) child = new WorldEntity(label);
+    if (!child) {
+      child = new WorldEntity(label);
+      this.transform.addChild(child);
+    }
     return child;
   }
   /**

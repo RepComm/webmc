@@ -37,18 +37,39 @@ export class Transform extends Component implements OGLTransform {
     this._oglTransform[ESC_COMPONENT_NAMESPACE] = this;
     Object.assign(this, this._oglTransform);
 
-    this.setParent = (...a) => this._oglTransform.setParent(...a);
-    this.addChild = (...a) => this._oglTransform.addChild(...a);
-    this.removeChild = (...a) => this._oglTransform.removeChild(...a);
+    // this.setParent = (...a) => this._oglTransform.setParent(...a);
+    // this.addChild = (...a) => this._oglTransform.addChild(...a);
+    // this.removeChild = (...a) => this._oglTransform.removeChild(...a);
     this.updateMatrixWorld = (...a) => this._oglTransform.updateMatrixWorld(...a);
     this.updateMatrix = (...a) => this._oglTransform.updateMatrix(...a);
     this.traverse = (...a) => this._oglTransform.traverse(...a);
     this.decompose = (...a) => this._oglTransform.decompose(...a);
     this.lookAt = (...a) => this._oglTransform.lookAt(...a);
   }
-  setParent: (parent: any, notifyParent?: boolean) => void;
-  addChild: (child: OGLTransform, notifyChild?: boolean) => void;
-  removeChild: (child: OGLTransform, notifyChild?: boolean) => void;
+  setParent (parent: WorldEntity|OGLTransform|null, notifyParent?: boolean): this {
+    if (parent instanceof WorldEntity) {
+      this._oglTransform.setParent(parent.transform._oglTransform, notifyParent);
+    } else {
+      this._oglTransform.setParent(parent, notifyParent);
+    }
+    return this;
+  }
+  addChild (child: WorldEntity|OGLTransform, notifyChild?: boolean): this {
+    if (child instanceof WorldEntity) {
+      this._oglTransform.addChild( child.transform, notifyChild );
+    } else {
+      this._oglTransform.addChild( child, notifyChild );
+    }
+    return this;
+  }
+  removeChild (child: OGLTransform, notifyChild?: boolean): this {
+    if (child instanceof WorldEntity) {
+      this._oglTransform.removeChild( child.transform, notifyChild );
+    } else {
+      this._oglTransform.removeChild( child, notifyChild );
+    }
+    return this;
+  }
   updateMatrixWorld: (force?: boolean) => void;
   updateMatrix: () => void;
   traverse: (callback: (node: OGLTransform) => boolean | void) => void;

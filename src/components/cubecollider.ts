@@ -27,7 +27,11 @@ export class CubeCollider extends WorldComponent {
     
     if (this.rb) {
       this._rapierCollider = Globals._rapierWorld.createCollider(this._rapierColliderDesc, this.rb._rapierRigidBody);
+      
     }
+  }
+  setFriction (f: number) {
+    this._rapierCollider.setFriction(f);
   }
   onReactivate(): void {
     this.rb = this.getComponent(RigidBody);

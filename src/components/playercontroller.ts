@@ -4,7 +4,7 @@ import { GameInput } from "@repcomm/gameinput-ts";
 import { Vec3 } from "ogl-typescript";
 import { WorldEntity } from "../entities/worldentity.js";
 import { Globals } from "../utils/global.js";
-import { CubeCollider } from "./cubecollider.js";
+import { SphereCollider } from "./spherecollider.js";
 import { Player } from "./player.js";
 import { RigidBody } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
@@ -14,10 +14,12 @@ export class PlayerController extends WorldComponent {
 
   player: Player;
   rb: RigidBody;
-  col: CubeCollider;
+  col: SphereCollider;
 
   movement: Vec3;
   speed: number;
+  lookSensitivity: number;
+
   input: GameInput;
   
   isOnGround: boolean;
@@ -29,10 +31,11 @@ export class PlayerController extends WorldComponent {
   constructor () {
     super();
     this.movement = new Vec3();
-    this.speed = 4;
+    this.speed = 1;
+    this.lookSensitivity = 0.001;
     this.input = GameInput.get();
 
-    this.jumpForce = 7;
+    this.jumpForce = 10;
     this.isOnGround = false;
     this.timeLastJump = 0;
     this.timeWaitJump = 400;
@@ -41,17 +44,41 @@ export class PlayerController extends WorldComponent {
 
     this.onUpdate = ()=>{
       if (this.rb) {
-        let rx = this.input.builtinMovementConsumer.getDeltaX();
-        let ry = this.input.builtinMovementConsumer.getDeltaY();
+
+        if (this.input.raw.pointerIsLocked()) {
+          let rx = this.input.builtinMovementConsumer.getDeltaX();
+          let ry = this.input.builtinMovementConsumer.getDeltaY();
+  
+          this.cameraAttachPoint.transform.rotation.x -= ry * this.lookSensitivity;
+          this.entity.transform.rotation.y -= rx * this.lookSensitivity;
+          // this.cameraAttachPoint.transform.rotation.y -= rx * this.lookSensitivity;
+        } else {
+          if (this.input.raw.getPointerButton(0)) {
+            this.input.raw.pointerTryLock(Globals.gl.canvas);
+          }
+        }
 
         let fwd = this.input.getAxisValue("forward");
         let strafe = this.input.getAxisValue("strafe");
         
-        this.movement.x = strafe;
-        this.movement.z = fwd;
-        this.movement.y = 0.0;
-        this.movement.normalize();
-        this.movement.multiply(this.speed);
+        if (Math.abs(fwd) < 0.5 && Math.abs(strafe) < 0.5) {
+          this.movement.z = -this.rb.velocity.z*0.1;
+          this.movement.x = -this.rb.velocity.x*0.1;
+          this.rb.applyImpulse(this.movement);
+        }
+
+        this.movement
+        .set(strafe, 0, fwd)
+        .applyQuaternion(this.entity.transform.quaternion)
+        .normalize()
+        // .multiply(fwd)
+        .multiply(this.speed);
+
+        // this.movement.x = strafe;
+        // this.movement.z = fwd;
+        // this.movement.y = 0.0;
+        // this.movement.normalize();
+        // this.movement.multiply(this.speed);
         
         this.rb.applyImpulse(this.movement, true);
         
@@ -60,6 +87,7 @@ export class PlayerController extends WorldComponent {
     };
   }
   jump () {
+    this.timeLastJump = Date.now();
     this.movement.x = 0;
     this.movement.z = 0;
     this.movement.y = 1;
@@ -82,14 +110,14 @@ export class PlayerController extends WorldComponent {
     this.ray.origin.z = z;
     // this.ray.dir
     return Globals._rapierWorld.castRay(
-      this.ray, 1, true,
+      this.ray, 1.5, true,
       undefined, undefined, undefined,
       this.rb._rapierRigidBody
     ) !== null;
   }
   onAttach(): void {
     
-    this.entity.getChildByLabel("cameraAttachPoint");
+    this.cameraAttachPoint = this.entity.getOrCreateChildByLabel("cameraAttachPoint");
     
     this.player = this.getComponent(Player)!; //playercontroller is added by Player, so Player should exist. otherwise error
 
@@ -97,9 +125,11 @@ export class PlayerController extends WorldComponent {
 
     this.rb = this.getOrCreateComponent(RigidBody)
     .setEnabledRotations(false, false, false, true)
-    .setLinearDamping(2);
+    .setLinearDamping(1);
 
-    this.col = this.getOrCreateComponent(CubeCollider);
+    this.col = new SphereCollider(0.4);
+    this.entity.addComponent(this.col);
+    this.col.setFriction(0);
     
     this.input.getOrCreateAxis("forward")
     .addInfluence({

@@ -12,6 +12,7 @@ import { SceneGraph } from "./ui/scenegraph.js";
 import { Globals } from "./utils/global.js";
 import { AtlasBuilder } from "./utils/atlas.js";
 import { BlockTextureSlot, BlockType } from "./voxel/blockdef.js";
+import { PlayerController } from "./components/playercontroller.js";
 
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
@@ -79,8 +80,8 @@ async function main() {
   Globals.gl = gl;
 
   const camera = new Camera(gl);
-  camera.position.z = Chunk.BLOCK_SIDE_LENGTH + 5;
-  camera.position.y = 2;
+  camera.position.z = 4;
+  camera.position.y = 1;
 
   function resize() {
     renderer.setSize(container.rect.width, container.rect.height);
@@ -99,7 +100,7 @@ async function main() {
   atlasBuilder.init({
     faceSize: new Vec2(16, 16),
     width: 16*4,
-    height: 16//*4
+    height: 16*4
   });
 
   // await atlasBuilder.loadTexture(
@@ -127,7 +128,7 @@ async function main() {
   );
 
   Globals.atlas = await atlasBuilder.build();
-  console.log(Globals.atlas.texture);
+  // console.log(Globals.atlas.texture);
 
   const chunk = new WorldEntity()
   .setLabel("Chunk")
@@ -140,7 +141,13 @@ async function main() {
     .addComponent(new Player())
     .setParent(scene)
     .setLabel("Player");
-  camera.setParent(player.transform);
+  
+  camera.setParent(
+    player.getComponent(PlayerController)
+    .cameraAttachPoint
+    .transform
+    ._oglTransform
+  );
   
 
   sceneGraphDisplay.setRootNode(scene);

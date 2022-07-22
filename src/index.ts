@@ -1,5 +1,5 @@
 
-import RAPIER from "@dimforge/rapier3d-compat";
+import RAPIER, { World } from "@dimforge/rapier3d-compat";
 
 import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@repcomm/exponent-ts";
 import { Camera, Renderer, Vec2 } from "ogl-typescript";
@@ -13,6 +13,7 @@ import { Globals } from "./utils/global.js";
 import { AtlasBuilder } from "./utils/atlas.js";
 import { BlockTextureSlot, BlockType } from "./voxel/blockdef.js";
 import { PlayerController } from "./components/playercontroller.js";
+import { FlatTexMesh } from "./components/flattexmesh.js";
 
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
@@ -140,18 +141,31 @@ async function main() {
   player.transform.position.x = Chunk.BLOCK_SIDE_LENGTH/2;
   player.transform.position.y = Chunk.BLOCK_SIDE_LENGTH;
   player.transform.position.z = Chunk.BLOCK_SIDE_LENGTH/2;
+
+  
   
   player.addComponent(new Player())
-    .setParent(Globals.scene)
-    .setLabel("Player");
+  .setParent(Globals.scene)
+  .setLabel("Player");
   
-  camera.setParent(
-    player.getComponent(PlayerController)
-    .cameraAttachPoint
+  let playerCameraAttachPoint = player.getComponent(PlayerController).cameraAttachPoint;
+  
+  camera.setParent(playerCameraAttachPoint
     .transform
     ._oglTransform
-  );
-  
+    );
+    
+  const pickaxeMesher = new FlatTexMesh();
+  await pickaxeMesher.setImage("./textures/item_pickaxe.png");
+
+  const pickaxe = new WorldEntity()
+  .setLabel("Pickaxe")
+  .addComponent(pickaxeMesher)
+  .setParent(playerCameraAttachPoint);
+  pickaxe.transform.position.set(0.5, 0.9, 0);
+  console.log(pickaxe.transform.rotation);
+  pickaxe.transform.rotation.set(Math.PI, -1, 0);
+    
 
   sceneGraphDisplay.setRootNode(Globals.scene);
 

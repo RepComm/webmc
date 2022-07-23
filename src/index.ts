@@ -142,8 +142,6 @@ async function main() {
   player.transform.position.y = Chunk.BLOCK_SIDE_LENGTH;
   player.transform.position.z = Chunk.BLOCK_SIDE_LENGTH/2;
 
-  
-  
   player.addComponent(new Player())
   .setParent(Globals.scene)
   .setLabel("Player");
@@ -160,9 +158,7 @@ async function main() {
   requestAnimationFrame(update);
   function update(t: number) {
     requestAnimationFrame(update);
-
-    // chunkParent.transform.rotation.y += 0.005;
-    // mesh.rotation.x += 0.01;
+    
     renderer.render({ scene: Globals.scene.transform, camera });
   }
 

@@ -51,7 +51,7 @@ export class Chunk extends WorldComponent {
 
     this.animTrack = new Vec3Animator()
     .createClip({
-      durationMillis: 1000,
+      durationMillis: 500,
       start: 0,
       end: 1,
       fps: 30,
@@ -59,7 +59,7 @@ export class Chunk extends WorldComponent {
       name: "fadein"
     })
     .createClip({
-      durationMillis: 1000,
+      durationMillis: 500,
       start: 1,
       end: 2,
       fps: 30,
@@ -107,8 +107,6 @@ export class Chunk extends WorldComponent {
     .setTarget(this.transform.position)
     .play("fadein");
     
-    window["animtrack"] = this.animTrack;
-
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
         attribute vec2 uv;

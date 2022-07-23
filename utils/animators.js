@@ -57,14 +57,20 @@ export class Vec3Animator {
       this.timeElapsed = Date.now() - this.lastStartTime;
 
       if (this.timeElapsed > this.currentClip.durationMillis) {
+        this.timeElapsed = this.currentClip.durationMillis;
+        this.calculate();
         this.stop();
         return;
       }
 
-      this.currentSeek = lerp(this.currentClip.start, this.currentClip.end, this.timeElapsed / this.currentClip.durationMillis);
-      this.getValueAtTime(this.currentSeek, this._target);
-      console.log(this.currentSeek, this._target);
+      this.calculate();
     }, 1000 / clip.fps);
+    return this;
+  }
+
+  calculate() {
+    this.currentSeek = lerp(this.currentClip.start, this.currentClip.end, this.timeElapsed / this.currentClip.durationMillis);
+    this.getValueAtTime(this.currentSeek, this._target);
     return this;
   }
 

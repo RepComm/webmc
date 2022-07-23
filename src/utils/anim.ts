@@ -8,6 +8,7 @@ export const lerp = (from: number, to: number, by: number): number => {
  * Will give you the interpolant given the interpolated number and its bounds (to and from)
  */
 export const inverseLerp = (from: number, to: number, value: number): number => {
+  if (to - from === 0) return value;
   return (value - from) / (to - from);
 }
 
@@ -47,13 +48,7 @@ function Keyframe_lerp (first: Keyframe, second: Keyframe, interpolant: number):
  */
 function Keyframe_lerp_time (first: Keyframe, second: Keyframe, time: number): number {
   return Keyframe_lerp (
-    first, second,
-
-    inverseLerp(
-      first.time,
-      second.time,
-      time
-    )
+    first, second, inverseLerp(first.time, second.time, time)
   );
 }
 
@@ -87,7 +82,7 @@ export class Track {
   
     //If no keyframe after, return last known
     if (!end) return start.value;
-  
+
     //Linear interpolate between the frames
     return Keyframe_lerp_time(start, end, time);
   }

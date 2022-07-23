@@ -7,6 +7,7 @@ export const lerp = (from, to, by) => {
  */
 
 export const inverseLerp = (from, to, value) => {
+  if (to - from === 0) return value;
   return (value - from) / (to - from);
 };
 

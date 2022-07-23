@@ -15,7 +15,7 @@ export class PlayerController extends WorldComponent {
     this.debugEntity.setActive(true);
     this.movement = new Vec3();
     this.speed = 1;
-    this.lookSensitivity = 0.001;
+    this.lookSensitivity = 0.25;
     this.input = GameInput.get();
     this.jumpForce = 10;
     this.isOnGround = false;
@@ -36,14 +36,16 @@ export class PlayerController extends WorldComponent {
     this.onUpdate = () => {
       if (this.rb) {
         if (this.input.raw.pointerIsLocked()) {
-          let rx = this.input.builtinMovementConsumer.getDeltaX();
-          let ry = this.input.builtinMovementConsumer.getDeltaY();
+          // let rx = this.input.builtinMovementConsumer.getDeltaX();
+          // let ry = this.input.builtinMovementConsumer.getDeltaY();
+          let rx = this.input.getAxisValue("h-look");
+          let ry = this.input.getAxisValue("v-look");
           this.cameraAttachPoint.transform.rotation.x -= ry * this.lookSensitivity;
           this.entity.transform.rotation.y -= rx * this.lookSensitivity; // this.cameraAttachPoint.transform.rotation.y -= rx * this.lookSensitivity;
 
           let block = this.input.getAxisValue("block");
 
-          if (block > 0.5) {
+          if (Math.abs(1 - block) < 0.25) {
             let {
               x,
               y,
@@ -73,7 +75,7 @@ export class PlayerController extends WorldComponent {
               this.block.type = 0;
               Globals.debugChunk.setBlockData(this.block, hitPoint.x, hitPoint.y, hitPoint.z, true);
             }
-          } else if (block < -0.5) {}
+          } else if (Math.abs(2 - block) < 0.25) {}
         } else {
           if (this.input.raw.getPointerButton(0)) {
             this.input.raw.pointerTryLock(Globals.gl.canvas);
@@ -140,11 +142,17 @@ export class PlayerController extends WorldComponent {
       keys: ["w"]
     }).addInfluence({
       value: 1,
+      gpAxes: [1]
+    }).addInfluence({
+      value: 1,
       keys: ["s"]
     });
     this.input.getOrCreateAxis("strafe").addInfluence({
       value: 1,
       keys: ["d"]
+    }).addInfluence({
+      value: 1,
+      gpAxes: [0]
     }).addInfluence({
       value: -1,
       keys: ["a"]
@@ -152,13 +160,39 @@ export class PlayerController extends WorldComponent {
     this.input.getOrCreateAxis("jump").addInfluence({
       value: 1,
       keys: [" "]
+    }).addInfluence({
+      value: 1,
+      gpButtons: [0]
     });
     this.input.getOrCreateAxis("block").addInfluence({
       value: 1,
       mouseButtons: [0]
     }).addInfluence({
-      value: -1,
+      value: 2,
       mouseButtons: [1]
+    }).addInfluence({
+      value: 1,
+      gpAxes: [2]
+    }).addInfluence({
+      value: 2,
+      gpAxes: [5]
+    });
+    this.input.getOrCreateAxis("h-look").addInfluence({
+      value: 1,
+      gpAxes: [3]
+    }).addInfluence({
+      value: 1,
+      mouseAxes: [0],
+      pointerAxisScale: 0.001
+    });
+    this.input.getOrCreateAxis("v-look").addInfluence({
+      value: 1,
+      gpAxes: [4] // gpAxisScale: 1000
+
+    }).addInfluence({
+      value: 1,
+      mouseAxes: [1],
+      pointerAxisScale: 0.001
     });
   }
 

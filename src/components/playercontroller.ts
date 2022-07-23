@@ -41,7 +41,7 @@ export class PlayerController extends WorldComponent {
 
     this.movement = new Vec3();
     this.speed = 1;
-    this.lookSensitivity = 0.001;
+    this.lookSensitivity = 0.25;
     this.input = GameInput.get();
 
     this.jumpForce = 10;
@@ -59,15 +59,15 @@ export class PlayerController extends WorldComponent {
       if (this.rb) {
 
         if (this.input.raw.pointerIsLocked()) {
-          let rx = this.input.builtinMovementConsumer.getDeltaX();
-          let ry = this.input.builtinMovementConsumer.getDeltaY();
+          let rx = this.input.getAxisValue("h-look");
+          let ry = this.input.getAxisValue("v-look");
 
           this.cameraAttachPoint.transform.rotation.x -= ry * this.lookSensitivity;
           this.entity.transform.rotation.y -= rx * this.lookSensitivity;
           // this.cameraAttachPoint.transform.rotation.y -= rx * this.lookSensitivity;
 
           let block = this.input.getAxisValue("block");
-          if (block > 0.5) {
+          if (Math.abs(1 - block) < 0.25) {
             let { x, y, z } = this.transform.position;
 
             this.ray.origin.x = x;
@@ -89,15 +89,15 @@ export class PlayerController extends WorldComponent {
               );
             if (hit !== null) {
               let hitPoint = this.ray.pointAt(hit.toi);
-              
-              hitPoint.x -= hit.normal.x/2;
-              hitPoint.y -= hit.normal.y/2;
-              hitPoint.z -= hit.normal.z/2;
+
+              hitPoint.x -= hit.normal.x / 2;
+              hitPoint.y -= hit.normal.y / 2;
+              hitPoint.z -= hit.normal.z / 2;
 
               hitPoint.x = Math.floor(hitPoint.x);
               hitPoint.y = Math.floor(hitPoint.y);
               hitPoint.z = Math.floor(hitPoint.z);
-              
+
               this.debugEntity.transform.position.set(
                 hitPoint.x,
                 hitPoint.y,
@@ -113,7 +113,7 @@ export class PlayerController extends WorldComponent {
                 true
               );
             }
-          } else if (block < -0.5) {
+          } else if (Math.abs(2 - block) < 0.25) {
 
           }
         } else {
@@ -199,12 +199,20 @@ export class PlayerController extends WorldComponent {
       })
       .addInfluence({
         value: 1,
+        gpAxes: [1]
+      })
+      .addInfluence({
+        value: 1,
         keys: ["s"]
       });
     this.input.getOrCreateAxis("strafe")
       .addInfluence({
         value: 1,
         keys: ["d"]
+      })
+      .addInfluence({
+        value: 1,
+        gpAxes: [0]
       })
       .addInfluence({
         value: -1,
@@ -215,16 +223,50 @@ export class PlayerController extends WorldComponent {
       .addInfluence({
         value: 1,
         keys: [" "]
+      })
+      .addInfluence({
+        value: 1,
+        gpButtons: [0]
       });
 
     this.input.getOrCreateAxis("block")
       .addInfluence({
         value: 1,
-        mouseButtons: [0]
+        mouseButtons: [0],
       })
       .addInfluence({
-        value: -1,
+        value: 2,
         mouseButtons: [1]
+      })
+      .addInfluence({
+        value: 1,
+        gpAxes: [2]
+      })
+      .addInfluence({
+        value: 2,
+        gpAxes: [5]
+      });
+
+    this.input.getOrCreateAxis("h-look")
+      .addInfluence({
+        value: 1,
+        gpAxes: [3],
+      })
+      .addInfluence({
+        value: 1,
+        mouseAxes: [0],
+        pointerAxisScale: 0.001
+      });
+    this.input.getOrCreateAxis("v-look")
+      .addInfluence({
+        value: 1,
+        gpAxes: [4],
+        // gpAxisScale: 1000
+      })
+      .addInfluence({
+        value: 1,
+        mouseAxes: [1],
+        pointerAxisScale: 0.001
       });
   }
 }

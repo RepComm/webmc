@@ -154,18 +154,6 @@ async function main() {
     .transform
     ._oglTransform
     );
-    
-  const pickaxeMesher = new FlatTexMesh();
-  await pickaxeMesher.setImage("./textures/item_pickaxe.png");
-
-  const pickaxe = new WorldEntity()
-  .setLabel("Pickaxe")
-  .addComponent(pickaxeMesher)
-  .setParent(playerCameraAttachPoint);
-  pickaxe.transform.position.set(0.5, 0.9, 0);
-  console.log(pickaxe.transform.rotation);
-  pickaxe.transform.rotation.set(Math.PI, -1, 0);
-    
 
   sceneGraphDisplay.setRootNode(Globals.scene);
 

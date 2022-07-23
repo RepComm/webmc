@@ -44,7 +44,6 @@ export class Chunk extends WorldComponent {
   onAttach() {
     Globals.debugChunk = this;
     this.animTrack.setValueAtTime(0, this.transform.position.x, this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH, this.transform.position.z).setValueAtTime(1, this.transform.position.x, this.transform.position.y, this.transform.position.z).setValueAtTime(2, this.transform.position.x, this.transform.position.y - Chunk.BLOCK_SIDE_LENGTH, this.transform.position.z).setTarget(this.transform.position).play("fadein");
-    window["animtrack"] = this.animTrack;
     let chunkMaterial = new Program(Globals.gl, {
       vertex: `
         attribute vec2 uv;

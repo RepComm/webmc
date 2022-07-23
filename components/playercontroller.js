@@ -1,6 +1,7 @@
 import { Ray } from "@dimforge/rapier3d-compat";
 import { GameInput } from "@repcomm/gameinput-ts";
 import { Vec3 } from "ogl-typescript";
+import { WorldEntity } from "../entities/worldentity.js";
 import { Globals } from "../utils/global.js";
 import { SphereCollider } from "./spherecollider.js";
 import { Player } from "./player.js";
@@ -8,6 +9,8 @@ import { RigidBody } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
 import { DebugEntity } from "../entities/debugentity.js";
 import { Block } from "../voxel/block.js";
+import { FlatTexMesh } from "./flattexmesh.js";
+import { Vec3Animator } from "../utils/animators.js";
 export class PlayerController extends WorldComponent {
   constructor() {
     super();
@@ -32,12 +35,18 @@ export class PlayerController extends WorldComponent {
     });
     this.rayDir = new Vec3();
     this.block = new Block();
+    this.itemAnimator = new Vec3Animator().createClip({
+      durationMillis: 100,
+      start: 0,
+      end: 1,
+      fps: 30,
+      loop: false,
+      name: "swing"
+    }).setValueAtTime(0, Math.PI, -1, Math.PI).setValueAtTime(0.5, Math.PI, -1, Math.PI - 1).setValueAtTime(1, Math.PI, -1, Math.PI);
 
     this.onUpdate = () => {
       if (this.rb) {
         if (this.input.raw.pointerIsLocked()) {
-          // let rx = this.input.builtinMovementConsumer.getDeltaX();
-          // let ry = this.input.builtinMovementConsumer.getDeltaY();
           let rx = this.input.getAxisValue("h-look");
           let ry = this.input.getAxisValue("v-look");
           this.cameraAttachPoint.transform.rotation.x -= ry * this.lookSensitivity;
@@ -64,6 +73,7 @@ export class PlayerController extends WorldComponent {
             let hit = Globals._rapierWorld.castRayAndGetNormal(this.ray, 16, false, undefined, undefined, undefined, this.rb._rapierRigidBody);
 
             if (hit !== null) {
+              this.itemAnimator.play("swing");
               let hitPoint = this.ray.pointAt(hit.toi);
               hitPoint.x -= hit.normal.x / 2;
               hitPoint.y -= hit.normal.y / 2;
@@ -130,6 +140,13 @@ export class PlayerController extends WorldComponent {
 
   onAttach() {
     this.cameraAttachPoint = this.entity.getOrCreateChildByLabel("cameraAttachPoint");
+    const itemMesher = new FlatTexMesh();
+    itemMesher.setImage("./textures/item_pickaxe.png").then(() => {
+      const pickaxe = new WorldEntity().setLabel("Pickaxe").addComponent(itemMesher).setParent(this.cameraAttachPoint);
+      pickaxe.transform.position.set(1.5, 0, 0);
+      pickaxe.transform.rotation.set(Math.PI, -1, Math.PI);
+      this.itemAnimator.setTarget(pickaxe.transform.rotation);
+    });
     this.player = this.getComponent(Player); //playercontroller is added by Player, so Player should exist. otherwise error
 
     this.transform.position.y = 10;

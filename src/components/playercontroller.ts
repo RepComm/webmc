@@ -10,10 +10,15 @@ import { RigidBody } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
 import { DebugEntity } from "../entities/debugentity.js";
 import { Block } from "../voxel/block.js";
+import { FlatTexMesh } from "./flattexmesh.js";
+import { Vec3Animator } from "../utils/animators.js";
 
 export class PlayerController extends WorldComponent {
+  
   debugEntity: DebugEntity;
   cameraAttachPoint: WorldEntity;
+
+  itemAnimator: Vec3Animator;
 
   player: Player;
   rb: RigidBody;
@@ -55,6 +60,25 @@ export class PlayerController extends WorldComponent {
 
     this.block = new Block();
 
+    this.itemAnimator = new Vec3Animator()
+    .createClip({
+      durationMillis: 100,
+      start: 0,
+      end: 1,
+      fps: 30,
+      loop: false,
+      name: "swing"
+    })
+    .setValueAtTime(0,
+      Math.PI, -1, Math.PI
+    )
+    .setValueAtTime(0.5,
+      Math.PI, -1, Math.PI - 1
+    )
+    .setValueAtTime(1,
+      Math.PI, -1, Math.PI
+    );
+
     this.onUpdate = () => {
       if (this.rb) {
 
@@ -88,6 +112,8 @@ export class PlayerController extends WorldComponent {
                 this.rb._rapierRigidBody
               );
             if (hit !== null) {
+              this.itemAnimator.play("swing");
+
               let hitPoint = this.ray.pointAt(hit.toi);
 
               hitPoint.x -= hit.normal.x / 2;
@@ -179,6 +205,21 @@ export class PlayerController extends WorldComponent {
   onAttach(): void {
 
     this.cameraAttachPoint = this.entity.getOrCreateChildByLabel("cameraAttachPoint");
+
+    const itemMesher = new FlatTexMesh();
+    itemMesher.setImage("./textures/item_pickaxe.png").then(()=>{
+
+      const pickaxe = new WorldEntity()
+      .setLabel("Pickaxe")
+      .addComponent(itemMesher)
+      .setParent(this.cameraAttachPoint);
+
+      pickaxe.transform.position.set(1.5, 0, 0);
+      pickaxe.transform.rotation.set(Math.PI, -1, Math.PI);
+
+      this.itemAnimator.setTarget(pickaxe.transform.rotation as any);
+      
+    });
 
     this.player = this.getComponent(Player)!; //playercontroller is added by Player, so Player should exist. otherwise error
 

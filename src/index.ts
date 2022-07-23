@@ -80,15 +80,8 @@ async function main() {
   gl.canvas.style["max-height"] = "100%";
   Globals.gl = gl;
 
-  const camera = new Camera(gl);
-  camera.position.z = 4;
-  camera.position.y = 1;
-
   function resize() {
     renderer.setSize(container.rect.width, container.rect.height);
-    camera.perspective({
-      aspect: gl.canvas.width / gl.canvas.height,
-    });
   }
   window.addEventListener('resize', resize, false);
   resize();
@@ -104,7 +97,7 @@ async function main() {
   });
 
   // await atlasBuilder.loadTexture(
-  //   "./textures/block-unknown.png",
+  //   "./textures/all_unknown.png",
   //   BlockType.UNKNOWN, BlockTextureSlot.MAIN
   // );
 
@@ -145,13 +138,6 @@ async function main() {
   player.addComponent(new Player())
   .setParent(Globals.scene)
   .setLabel("Player");
-  
-  let playerCameraAttachPoint = player.getComponent(PlayerController).cameraAttachPoint;
-  
-  camera.setParent(playerCameraAttachPoint
-    .transform
-    ._oglTransform
-    );
 
   sceneGraphDisplay.setRootNode(Globals.scene);
 
@@ -159,7 +145,7 @@ async function main() {
   function update(t: number) {
     requestAnimationFrame(update);
     
-    renderer.render({ scene: Globals.scene.transform, camera });
+    if (Globals.scene && Globals.mainCamera) renderer.render({ scene: Globals.scene.transform, camera: Globals.mainCamera });
   }
 
   setInterval(()=>{

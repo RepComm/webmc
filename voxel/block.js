@@ -1,5 +1,8 @@
+import { Vec3 } from "ogl-typescript";
 export class Block {
-  constructor() {}
+  constructor() {
+    this.position = new Vec3(0, 0, 0);
+  }
   /**Like isTransparent but named for future proofing*/
 
 

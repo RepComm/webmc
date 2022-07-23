@@ -1,6 +1,6 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@repcomm/exponent-ts";
-import { Camera, Renderer, Vec2 } from "ogl-typescript";
+import { Renderer, Vec2 } from "ogl-typescript";
 import { AudioPlayer } from "./audio/audioplayer.js";
 import { Chunk } from "./components/chunk.js";
 import { Player } from "./components/player.js";
@@ -10,7 +10,6 @@ import { SceneGraph } from "./ui/scenegraph.js";
 import { Globals } from "./utils/global.js";
 import { AtlasBuilder } from "./utils/atlas.js";
 import { BlockTextureSlot, BlockType } from "./voxel/blockdef.js";
-import { PlayerController } from "./components/playercontroller.js";
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
 
@@ -54,15 +53,9 @@ async function main() {
   gl.canvas.style["max-width"] = "100%";
   gl.canvas.style["max-height"] = "100%";
   Globals.gl = gl;
-  const camera = new Camera(gl);
-  camera.position.z = 4;
-  camera.position.y = 1;
 
   function resize() {
     renderer.setSize(container.rect.width, container.rect.height);
-    camera.perspective({
-      aspect: gl.canvas.width / gl.canvas.height
-    });
   }
 
   window.addEventListener('resize', resize, false);
@@ -74,7 +67,7 @@ async function main() {
     width: 16 * 4,
     height: 16 * 4
   }); // await atlasBuilder.loadTexture(
-  //   "./textures/block-unknown.png",
+  //   "./textures/all_unknown.png",
   //   BlockType.UNKNOWN, BlockTextureSlot.MAIN
   // );
 
@@ -91,18 +84,14 @@ async function main() {
   player.transform.position.y = Chunk.BLOCK_SIDE_LENGTH;
   player.transform.position.z = Chunk.BLOCK_SIDE_LENGTH / 2;
   player.addComponent(new Player()).setParent(Globals.scene).setLabel("Player");
-  let playerCameraAttachPoint = player.getComponent(PlayerController).cameraAttachPoint;
-  camera.setParent(playerCameraAttachPoint.transform._oglTransform);
   sceneGraphDisplay.setRootNode(Globals.scene);
   requestAnimationFrame(update);
 
   function update(t) {
-    requestAnimationFrame(update); // chunkParent.transform.rotation.y += 0.005;
-    // mesh.rotation.x += 0.01;
-
-    renderer.render({
+    requestAnimationFrame(update);
+    if (Globals.scene && Globals.mainCamera) renderer.render({
       scene: Globals.scene.transform,
-      camera
+      camera: Globals.mainCamera
     });
   }
 

@@ -4,7 +4,7 @@ import type { Atlas } from "./atlas.js";
 import type { WorldEntity } from "../entities/worldentity.js";
 import type { Chunk } from "../components/chunk.js";
 
-import { OGLRenderingContext, Vec3 } from "ogl-typescript";
+import { Camera, OGLRenderingContext, Vec3 } from "ogl-typescript";
 
 export class Globals {
   static gl: OGLRenderingContext;
@@ -14,6 +14,7 @@ export class Globals {
   static atlas: Atlas;
   static scene: WorldEntity;
   static debugChunk: Chunk;
+  static mainCamera: Camera;
 }
 Globals.delta = 1000 / 30;
 Globals.gravity = new Vec3(0, -9.8, 0);

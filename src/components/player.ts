@@ -1,7 +1,6 @@
 
 import { Program } from "ogl-typescript";
 import { Globals } from "../utils/global.js";
-import { MeshBuilder } from "../utils/meshbuilder.js";
 import { Mesh } from "./mesh.js";
 import { PlayerController } from "./playercontroller.js";
 import { WorldComponent } from "./worldcomponent.js";
@@ -12,13 +11,13 @@ export class Player extends WorldComponent {
   mesh: Mesh;
   controller: PlayerController;
 
-  constructor () {
+  constructor() {
     super();
-    
+
   }
   onAttach(): void {
     this.isLocalUser = true;
-    
+
     let playerMaterial = new Program(Globals.gl, {
       vertex: /* glsl */ `
         attribute vec3 position;
@@ -37,16 +36,16 @@ export class Player extends WorldComponent {
       `,
     });
 
-    this.mesh = new Mesh(playerMaterial);
-    this.entity.addComponent(this.mesh);
-  
-    let mb = new MeshBuilder();
-    mb.clear();
-    mb.cube(-0.5, -0.5, -0.5, 1, 1, 1);
-    let data = mb.build();
-    this.mesh.updateGeometryFromMeshBuilder(Globals.gl, data);
-  
+    // this.mesh = new Mesh(playerMaterial);
+    // this.entity.addComponent(this.mesh);
+
+    // let mb = new MeshBuilder();
+    // mb.clear();
+    // mb.cube(-0.5, -0.5, -0.5, 1, 1, 1);
+    // let data = mb.build();
+    // this.mesh.updateGeometryFromMeshBuilder(Globals.gl, data);
+
     this.controller = this.getOrCreateComponent(PlayerController);
-    
+
   }
 }

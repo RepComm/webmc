@@ -35,7 +35,7 @@ export class PlayerController extends WorldComponent {
     });
     this.rayDir = new Vec3();
     this.block = new Block();
-    this.itemAnimator = new Vec3Animator().createClip({
+    this.itemSwingAnim = new Vec3Animator().createClip({
       durationMillis: 100,
       start: 0,
       end: 1,
@@ -43,68 +43,79 @@ export class PlayerController extends WorldComponent {
       loop: false,
       name: "swing"
     }).setValueAtTime(0, Math.PI, -1, Math.PI).setValueAtTime(0.5, Math.PI, -1, Math.PI - 1).setValueAtTime(1, Math.PI, -1, Math.PI);
+    this.itemJogAnim = new Vec3Animator().createClip({
+      durationMillis: 700,
+      start: 0,
+      end: 4,
+      fps: 30,
+      loop: false,
+      name: "jog"
+    }).setValueAtTime(0, 1.5, 0, 0).setValueAtTime(1, 1.8, -0.3, 0).setValueAtTime(2, 2.3, 0, 0).setValueAtTime(3, 1.8, -0.3, 0).setValueAtTime(4, 1.5, 0, 0);
 
     this.onUpdate = () => {
-      if (this.rb) {
-        if (this.input.raw.pointerIsLocked()) {
-          let rx = this.input.getAxisValue("h-look");
-          let ry = this.input.getAxisValue("v-look");
-          this.cameraAttachPoint.transform.rotation.x -= ry * this.lookSensitivity;
-          this.entity.transform.rotation.y -= rx * this.lookSensitivity; // this.cameraAttachPoint.transform.rotation.y -= rx * this.lookSensitivity;
+      if (!this.rb) return;
 
-          let block = this.input.getAxisValue("block");
+      if (this.input.raw.pointerIsLocked()) {
+        let rx = this.input.getAxisValue("h-look");
+        let ry = this.input.getAxisValue("v-look");
+        this.cameraAttachPoint.transform.rotation.x -= ry * this.lookSensitivity;
+        this.entity.transform.rotation.y -= rx * this.lookSensitivity; // this.cameraAttachPoint.transform.rotation.y -= rx * this.lookSensitivity;
 
-          if (Math.abs(1 - block) < 0.25) {
-            let {
-              x,
-              y,
-              z
-            } = this.transform.position;
-            this.ray.origin.x = x;
-            this.ray.origin.y = y;
-            this.ray.origin.z = z;
-            this.rayDir.set(0, 0, -1);
-            this.rayDir.applyQuaternion(this.cameraAttachPoint.transform.quaternion);
-            this.rayDir.applyQuaternion(this.entity.transform.quaternion);
-            this.ray.dir.x = this.rayDir.x;
-            this.ray.dir.y = this.rayDir.y;
-            this.ray.dir.z = this.rayDir.z;
+        let block = this.input.getAxisValue("block");
 
-            let hit = Globals._rapierWorld.castRayAndGetNormal(this.ray, 16, false, undefined, undefined, undefined, this.rb._rapierRigidBody);
+        if (Math.abs(1 - block) < 0.25) {
+          let {
+            x,
+            y,
+            z
+          } = this.transform.position;
+          this.ray.origin.x = x;
+          this.ray.origin.y = y;
+          this.ray.origin.z = z;
+          this.rayDir.set(0, 0, -1);
+          this.rayDir.applyQuaternion(this.cameraAttachPoint.transform.quaternion);
+          this.rayDir.applyQuaternion(this.entity.transform.quaternion);
+          this.ray.dir.x = this.rayDir.x;
+          this.ray.dir.y = this.rayDir.y;
+          this.ray.dir.z = this.rayDir.z;
 
-            if (hit !== null) {
-              this.itemAnimator.play("swing");
-              let hitPoint = this.ray.pointAt(hit.toi);
-              hitPoint.x -= hit.normal.x / 2;
-              hitPoint.y -= hit.normal.y / 2;
-              hitPoint.z -= hit.normal.z / 2;
-              hitPoint.x = Math.floor(hitPoint.x);
-              hitPoint.y = Math.floor(hitPoint.y);
-              hitPoint.z = Math.floor(hitPoint.z);
-              this.debugEntity.transform.position.set(hitPoint.x, hitPoint.y, hitPoint.z);
-              this.block.type = 0;
-              Globals.debugChunk.setBlockData(this.block, hitPoint.x, hitPoint.y, hitPoint.z, true);
-            }
-          } else if (Math.abs(2 - block) < 0.25) {}
-        } else {
-          if (this.input.raw.getPointerButton(0)) {
-            this.input.raw.pointerTryLock(Globals.gl.canvas);
+          let hit = Globals._rapierWorld.castRayAndGetNormal(this.ray, 16, false, undefined, undefined, undefined, this.rb._rapierRigidBody);
+
+          if (hit !== null) {
+            this.itemSwingAnim.play("swing");
+            let hitPoint = this.ray.pointAt(hit.toi);
+            hitPoint.x -= hit.normal.x / 2;
+            hitPoint.y -= hit.normal.y / 2;
+            hitPoint.z -= hit.normal.z / 2;
+            hitPoint.x = Math.floor(hitPoint.x);
+            hitPoint.y = Math.floor(hitPoint.y);
+            hitPoint.z = Math.floor(hitPoint.z);
+            this.debugEntity.transform.position.set(hitPoint.x, hitPoint.y, hitPoint.z);
+            this.block.type = 0;
+            Globals.debugChunk.setBlockData(this.block, hitPoint.x, hitPoint.y, hitPoint.z, true);
           }
+        } else if (Math.abs(2 - block) < 0.25) {}
+      } else {
+        if (this.input.raw.getPointerButton(0)) {
+          this.input.raw.pointerTryLock(Globals.gl.canvas);
         }
-
-        let fwd = this.input.getAxisValue("forward");
-        let strafe = this.input.getAxisValue("strafe");
-
-        if (Math.abs(fwd) < 0.5 && Math.abs(strafe) < 0.5) {
-          this.movement.z = -this.rb.velocity.z * 0.1;
-          this.movement.x = -this.rb.velocity.x * 0.1;
-          this.rb.applyImpulse(this.movement);
-        }
-
-        this.movement.set(strafe, 0, fwd).applyQuaternion(this.entity.transform.quaternion).normalize().multiply(this.speed);
-        this.rb.applyImpulse(this.movement, true);
-        if (this.canJump()) this.jump();
       }
+
+      let fwd = this.input.getAxisValue("forward");
+      let strafe = this.input.getAxisValue("strafe");
+
+      if (Math.abs(fwd) < 0.5 && Math.abs(strafe) < 0.5) {
+        this.movement.z = -this.rb.velocity.z * 0.1;
+        this.movement.x = -this.rb.velocity.x * 0.1;
+        this.rb.applyImpulse(this.movement);
+        if (this.itemJogAnim.isPlaying) this.itemJogAnim.stop();
+      } else {
+        if (!this.itemJogAnim.isPlaying) this.itemJogAnim.play("jog");
+      }
+
+      this.movement.set(strafe, 0, fwd).applyQuaternion(this.entity.transform.quaternion).normalize().multiply(this.speed);
+      this.rb.applyImpulse(this.movement, true);
+      if (this.canJump()) this.jump();
     };
   }
 
@@ -145,7 +156,8 @@ export class PlayerController extends WorldComponent {
       const pickaxe = new WorldEntity().setLabel("Pickaxe").addComponent(itemMesher).setParent(this.cameraAttachPoint);
       pickaxe.transform.position.set(1.5, 0, 0);
       pickaxe.transform.rotation.set(Math.PI, -1, Math.PI);
-      this.itemAnimator.setTarget(pickaxe.transform.rotation);
+      this.itemSwingAnim.setTarget(pickaxe.transform.rotation);
+      this.itemJogAnim.setTarget(pickaxe.transform.position);
     });
     this.player = this.getComponent(Player); //playercontroller is added by Player, so Player should exist. otherwise error
 

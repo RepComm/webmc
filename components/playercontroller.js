@@ -228,6 +228,9 @@ export class PlayerController extends WorldComponent {
     this.calcBlockPosition(false);
     this.itemSwingAnim.play("swing");
     Vec3Copy(this.debugEntity.transform.position, this.block.position);
+    setTimeout(() => {
+      Vec3Set(this.debugEntity.transform.position, 0, 0, 0);
+    }, 10);
     this.block.type = 0;
     Globals.debugChunk.setBlockData(this.block, this.block.position.x, this.block.position.y, this.block.position.z, true);
   }
@@ -236,6 +239,9 @@ export class PlayerController extends WorldComponent {
     this.calcBlockPosition(true);
     this.itemSwingAnim.play("swing");
     Vec3Copy(this.debugEntity.transform.position, this.block.position);
+    setTimeout(() => {
+      Vec3Set(this.debugEntity.transform.position, 0, 0, 0);
+    }, 10);
     this.block.type = 1;
     Globals.debugChunk.setBlockData(this.block, this.block.position.x, this.block.position.y, this.block.position.z, true);
   }

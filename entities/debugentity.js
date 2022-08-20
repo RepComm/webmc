@@ -8,7 +8,7 @@ export class DebugEntity extends WorldEntity {
     this.mesh = new Mesh();
     let mb = new MeshBuilder();
     mb.clear();
-    mb.cube(-0.1, -0.1, -0.1, 1.2, 1.2, 1.2);
+    mb.cube(-0.05, -0.05, -0.05, 1.1, 1.1, 1.1);
     this.mesh.updateGeometryFromMeshBuilder(Globals.gl, mb.build());
     this.addComponent(this.mesh);
   }

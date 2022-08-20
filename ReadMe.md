@@ -13,7 +13,8 @@ Recreation of minecraft in web for creating custom experiences
 - RigidBody, MeshCollider, SphereCollider, CubeCollider components
 - Transform, Mesh, FlatTexMesh components
 - Chunks, Texture Atlas generator
-- Break blocks
+- Place / break blocks
+- Player raycast hit
 - Vec3Animator, item swing and jog animations
 
 # TODO Impl

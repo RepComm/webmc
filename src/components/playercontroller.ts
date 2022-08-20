@@ -21,11 +21,17 @@ export interface Vec3Like {
   y: number;
   z: number;
 }
-function Vec3ApplyQuaternion(out: Vec3Like, a: Vec3Like, q: Quaternion): Vec3Like {
+export interface QuaternionLike {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+}
+function Vec3ApplyQuaternion(out: Vec3Like, a: Vec3Like, q: QuaternionLike): Vec3Like {
   // benchmarks: https://jsperf.com/quaternion-transform-vec3-implementations-fixed
   let { x, y, z } = a;
 
-  let qx = q[0], qy = q[1], qz = q[2], qw = q[3];
+  let qx = q.x, qy = q.y, qz = q.z, qw = q.w;
   let uvx = qy * z - qz * y;
   let uvy = qz * x - qx * z;
   let uvz = qx * y - qy * x;
@@ -61,6 +67,11 @@ function Vec3Add(out: Vec3Like, a: Vec3Like): Vec3Like {
   out.y += a.y;
   out.z += a.z;
   return out;
+}
+function Vec3Set(out: Vec3Like, x: number, y: number, z: number) {
+  out.x = x;
+  out.y = y;
+  out.z = z;
 }
 
 export class PlayerController extends WorldComponent {
@@ -355,10 +366,10 @@ export class PlayerController extends WorldComponent {
     Vec3Add(this.ray.origin, this.cameraEntity.transform.position);
     // console.log("origin", this.ray.origin);
 
-    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion);
+    Vec3Set(this.ray.dir, 0, 0, -1);
+    
     Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.cameraEntity.transform.quaternion);
-
-    // console.log(this.ray.dir);
+    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion);
 
     this.rayHit = Globals._rapierWorld
       .castRayAndGetNormal(

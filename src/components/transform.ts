@@ -26,10 +26,14 @@ export class Transform extends Component implements OGLTransform {
   matrixAutoUpdate: boolean;
   worldMatrixNeedsUpdate: boolean;
   position: Vec3;
+  worldPosition: Vec3;
   scale: Vec3;
+  worldScale: Vec3;
   up: Vec3;
   quaternion: Quat;
+  worldQuaternion: Quat;
   rotation: Euler;
+  worldRotation: Euler;
 
   constructor() {
     super();
@@ -37,13 +41,18 @@ export class Transform extends Component implements OGLTransform {
     this._oglTransform[ESC_COMPONENT_NAMESPACE] = this;
     Object.assign(this, this._oglTransform);
 
+    this.worldPosition = new Vec3();
+    this.worldScale = new Vec3(1);
+    this.worldQuaternion = new Quat();
+    this.worldRotation = new Euler();
+
     // this.setParent = (...a) => this._oglTransform.setParent(...a);
     // this.addChild = (...a) => this._oglTransform.addChild(...a);
     // this.removeChild = (...a) => this._oglTransform.removeChild(...a);
     this.updateMatrixWorld = (...a) => this._oglTransform.updateMatrixWorld(...a);
     this.updateMatrix = (...a) => this._oglTransform.updateMatrix(...a);
     this.traverse = (...a) => this._oglTransform.traverse(...a);
-    this.decompose = (...a) => this._oglTransform.decompose(...a);
+    // this.decompose = () => this._oglTransform.decompose();
     this.lookAt = (...a) => this._oglTransform.lookAt(...a);
   }
   setParent (parent: WorldEntity|OGLTransform|null, notifyParent?: boolean): this {
@@ -73,6 +82,17 @@ export class Transform extends Component implements OGLTransform {
   updateMatrixWorld: (force?: boolean) => void;
   updateMatrix: () => void;
   traverse: (callback: (node: OGLTransform) => boolean | void) => void;
-  decompose: () => void;
+  // decompose: () => void;
+  decompose () {
+    //local matrix decompose
+    this._oglTransform.decompose();
+
+    //world matrix decompose
+    this.worldMatrix.getTranslation(this.worldPosition);
+    this.worldMatrix.getRotation(this.worldQuaternion);
+    this.worldMatrix.getScaling(this.worldScale);
+    this.worldRotation.fromQuaternion(this.worldQuaternion);
+  }
   lookAt: <T extends number[]>(target: T, invert?: boolean) => void;
+
 }

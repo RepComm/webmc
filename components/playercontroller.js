@@ -22,10 +22,10 @@ function Vec3ApplyQuaternion(out, a, q) {
     y,
     z
   } = a;
-  let qx = q[0],
-      qy = q[1],
-      qz = q[2],
-      qw = q[3];
+  let qx = q.x,
+      qy = q.y,
+      qz = q.z,
+      qw = q.w;
   let uvx = qy * z - qz * y;
   let uvy = qz * x - qx * z;
   let uvz = qx * y - qy * x;
@@ -64,6 +64,12 @@ function Vec3Add(out, a) {
   out.y += a.y;
   out.z += a.z;
   return out;
+}
+
+function Vec3Set(out, x, y, z) {
+  out.x = x;
+  out.y = y;
+  out.z = z;
 }
 
 export class PlayerController extends WorldComponent {
@@ -244,8 +250,11 @@ export class PlayerController extends WorldComponent {
     Vec3Copy(this.ray.origin, this.transform.position);
     Vec3Add(this.ray.origin, this.cameraEntity.transform.position); // console.log("origin", this.ray.origin);
 
-    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion);
-    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.cameraEntity.transform.quaternion); // console.log(this.ray.dir);
+    Vec3Set(this.ray.dir, 0, 0, -1); // Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion);
+    // Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.cameraEntity.transform.quaternion);
+
+    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.cameraEntity.transform.quaternion);
+    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion); // console.log(this.ray.dir);
 
     this.rayHit = Globals._rapierWorld.castRayAndGetNormal(this.ray, 16, false, undefined, undefined, undefined, this.rb._rapierRigidBody);
 

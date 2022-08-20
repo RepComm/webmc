@@ -12,66 +12,8 @@ import { Block } from "../voxel/block.js";
 import { FlatTexMesh } from "./flattexmesh.js";
 import { Vec3Animator } from "../utils/animators.js";
 import { Camera } from "./camera.js";
-import { lerp } from "../utils/anim.js";
-import { Vec3Floor } from "../utils/math.js";
-
-function Vec3ApplyQuaternion(out, a, q) {
-  // benchmarks: https://jsperf.com/quaternion-transform-vec3-implementations-fixed
-  let {
-    x,
-    y,
-    z
-  } = a;
-  let qx = q.x,
-      qy = q.y,
-      qz = q.z,
-      qw = q.w;
-  let uvx = qy * z - qz * y;
-  let uvy = qz * x - qx * z;
-  let uvz = qx * y - qy * x;
-  let uuvx = qy * uvz - qz * uvy;
-  let uuvy = qz * uvx - qx * uvz;
-  let uuvz = qx * uvy - qy * uvx;
-  let w2 = qw * 2;
-  uvx *= w2;
-  uvy *= w2;
-  uvz *= w2;
-  uuvx *= 2;
-  uuvy *= 2;
-  uuvz *= 2;
-  out.x = x + uvx + uuvx;
-  out.y = y + uvy + uuvy;
-  out.z = z + uvz + uuvz;
-  return out;
-}
-
-function Vec3Copy(out, a) {
-  out.x = a.x;
-  out.y = a.y;
-  out.z = a.z;
-  return out;
-}
-
-function Vec3Sub(out, a) {
-  out.x -= a.x;
-  out.y -= a.y;
-  out.z -= a.z;
-  return out;
-}
-
-function Vec3Add(out, a) {
-  out.x += a.x;
-  out.y += a.y;
-  out.z += a.z;
-  return out;
-}
-
-function Vec3Set(out, x, y, z) {
-  out.x = x;
-  out.y = y;
-  out.z = z;
-}
-
+import { lerp, Vec3Add, Vec3ApplyQuaternion, Vec3Copy, Vec3Dist, Vec3Floor, Vec3Lerp, Vec3Set } from "../utils/math.js";
+import { Timer } from "../utils/timer.js";
 export class PlayerController extends WorldComponent {
   constructor() {
     super();
@@ -81,12 +23,9 @@ export class PlayerController extends WorldComponent {
     this.input = GameInput.get();
     this.jumpForce = 10;
     this.isOnGround = false;
-    this.timeLastJump = 0;
-    this.timeWaitJump = 400;
-    this.timeLastBreak = 0;
-    this.timeWaitBreak = 200;
-    this.timeLastPlace = 0;
-    this.timeWaitPlace = 100;
+    this.jumpTimer = new Timer(400);
+    this.breakTimer = new Timer(200);
+    this.placeTimer = new Timer(100);
     this.camera = new Camera();
     this.ray = new Ray({
       x: 0.0,
@@ -129,12 +68,12 @@ export class PlayerController extends WorldComponent {
         this.cameraEntity.transform.rotation.x -= ry * this.lookSensitivity;
         this.entity.transform.rotation.y -= rx * this.lookSensitivity; // this.cameraAttachPoint.transform.rotation.y -= rx * this.lookSensitivity;
         //update what block/entity we are looking at
+        // this.detectBlockFocus();
 
-        this.detectBlockFocus();
-        Vec3Copy(this.debugEntity.transform.position, this.block.position); // Vec3Copy(this.debugEntity.transform.position, this.transform.position);
+        if (this.detectBlockRaycast()) {
+          if (this.canBreak()) this.break();else if (this.canPlace()) this.place();
+        } // Vec3Copy(this.debugEntity.transform.position, this.block.position);
 
-        if (this.canBreak()) this.break();
-        if (this.canPlace()) this.place();
       } else {
         if (this.input.raw.getPointerButton(0)) {
           this.input.raw.pointerTryLock(Globals.gl.canvas);
@@ -239,63 +178,69 @@ export class PlayerController extends WorldComponent {
   }
 
   canBreak() {
-    return this.input.getAxisValue("break") === 1 && Date.now() - this.timeLastBreak > this.timeWaitBreak && this.rayHit !== null;
+    return this.input.getAxisValue("break") === 1 && this.breakTimer.update() && this.rayHitPoint !== null;
   }
 
   canPlace() {
-    return this.input.getAxisValue("place") === 1 && Date.now() - this.timeLastPlace > this.timeWaitPlace && this.rayHit !== null;
+    return this.input.getAxisValue("place") === 1 && this.placeTimer.update() && this.rayHitPoint !== null;
   }
+  /**Result stored in this.rayHit and this.rayHitPoint
+   * 
+   * if no hit detected, this.rayHitPoint will be null and return will be false
+   * 
+   * otherwise this.rayHitPoint is populated and return will be true
+  */
 
-  detectBlockFocus() {
+
+  detectBlockRaycast() {
     Vec3Copy(this.ray.origin, this.transform.position);
     Vec3Add(this.ray.origin, this.cameraEntity.transform.position); // console.log("origin", this.ray.origin);
 
-    Vec3Set(this.ray.dir, 0, 0, -1); // Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion);
-    // Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.cameraEntity.transform.quaternion);
-
+    Vec3Set(this.ray.dir, 0, 0, -1);
     Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.cameraEntity.transform.quaternion);
-    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion); // console.log(this.ray.dir);
-
+    Vec3ApplyQuaternion(this.ray.dir, this.ray.dir, this.entity.transform.quaternion);
     this.rayHit = Globals._rapierWorld.castRayAndGetNormal(this.ray, 16, false, undefined, undefined, undefined, this.rb._rapierRigidBody);
 
     if (this.rayHit) {
       this.rayHitPoint = this.ray.pointAt(this.rayHit.toi);
-      Vec3Copy(this.block.position, this.rayHitPoint);
-      Vec3Sub(this.block.position, this.rayHit.normal);
-      Vec3Floor(this.block.position);
+      return true;
     } else {
       this.rayHitPoint = null;
+      return false;
     }
   }
 
-  break() {
-    if (!this.rayHit) return;
-    this.timeLastBreak = Date.now();
-    this.itemSwingAnim.play("swing"); // this.debugEntity.transform.position.set(
-    //   hitPoint.x,
-    //   hitPoint.y,
-    //   hitPoint.z
-    // );
+  calcBlockPosition(place) {
+    Vec3Copy(this.block.position, this.rayHitPoint);
+    let distance = Vec3Dist(this.ray.origin, this.block.position); //place vs break, removes or adds a quarter of a block distance into raycast direction for the hit point
 
+    let extraDistance = place ? -0.25 : 0.25;
+    let totalDistance = distance + extraDistance;
+    let interpolant = totalDistance / distance; //move the hit point backwards or forwards based on hit/break so that it is inside of a block
+
+    Vec3Lerp(this.block.position, this.ray.origin, this.block.position, interpolant); //clamp coordinates to integers
+
+    Vec3Floor(this.block.position);
+    return this;
+  }
+
+  break() {
+    this.calcBlockPosition(false);
+    this.itemSwingAnim.play("swing");
+    Vec3Copy(this.debugEntity.transform.position, this.block.position);
     this.block.type = 0;
     Globals.debugChunk.setBlockData(this.block, this.block.position.x, this.block.position.y, this.block.position.z, true);
   }
 
   place() {
-    if (!this.rayHit) return;
-    this.timeLastPlace = Date.now();
-    this.itemSwingAnim.play("swing"); // this.debugEntity.transform.position.set(
-    //   hitPoint.x,
-    //   hitPoint.y,
-    //   hitPoint.z
-    // );
-
+    this.calcBlockPosition(true);
+    this.itemSwingAnim.play("swing");
+    Vec3Copy(this.debugEntity.transform.position, this.block.position);
     this.block.type = 1;
     Globals.debugChunk.setBlockData(this.block, this.block.position.x, this.block.position.y, this.block.position.z, true);
   }
 
   jump() {
-    this.timeLastJump = Date.now();
     this.movement.x = 0;
     this.movement.z = 0;
     this.movement.y = 1; // this.movement.normalize();
@@ -305,7 +250,7 @@ export class PlayerController extends WorldComponent {
   }
 
   canJump() {
-    return this.input.getAxisValue("jump") > 0.5 && Date.now() - this.timeLastJump > this.timeWaitJump && this.isOnGround;
+    return this.input.getAxisValue("jump") > 0.5 && this.jumpTimer.update() && this.isOnGround;
   }
 
   detectNearGround() {

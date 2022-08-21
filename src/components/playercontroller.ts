@@ -8,16 +8,17 @@ import { SphereCollider } from "./spherecollider.js";
 import { Player } from "./player.js";
 import { RigidBody } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
-import { DebugEntity } from "../entities/debugentity.js";
+// import { DebugEntity } from "../entities/debugentity.js";
 import { Block } from "../voxel/block.js";
 import { FlatTexMesh } from "./flattexmesh.js";
 import { Vec3Animator } from "../utils/animators.js";
 import { Camera } from "./camera.js";
-import { lerp, Vec3Add, Vec3ApplyQuaternion, Vec3Copy, Vec3Dist, Vec3Floor, Vec3Lerp, Vec3Set,  } from "../utils/math.js";
+import { lerp, Vec3Add, Vec3ApplyQuaternion, Vec3Copy, Vec3Dist, Vec3Floor, Vec3Lerp, Vec3MulScalar, Vec3Set, Vec3Sub,  } from "../utils/math.js";
 import { Timer } from "../utils/timer.js";
+import { BoxWire } from "./boxwire.js";
 
 export class PlayerController extends WorldComponent {
-  debugEntity: DebugEntity;
+  blockIndicator: WorldEntity;
 
   cameraEntity: WorldEntity
   camera: Camera;
@@ -135,6 +136,12 @@ export class PlayerController extends WorldComponent {
         //update what block/entity we are looking at
         // this.detectBlockFocus();
         if (this.detectBlockRaycast()) {
+
+          //move indicator
+          this.calcBlockPosition(false);
+          Vec3Copy(this.blockIndicator.transform.position, this.block.position);
+
+          //try to break/place
           if (this.canBreak()) this.break();
           else if (this.canPlace()) this.place();
         }
@@ -172,8 +179,12 @@ export class PlayerController extends WorldComponent {
   }
   onAttach(): void {
 
-    this.debugEntity = new DebugEntity();
-    this.debugEntity.setActive(true);
+    this.blockIndicator = new WorldEntity("block indicator");
+    this.blockIndicator.getOrCreateComponent(BoxWire);
+    this.blockIndicator.setParent(Globals.scene);
+
+    // this.blockIndicator = new DebugEntity();
+    // this.blockIndicator.setActive(true);
 
     this.cameraEntity = this.entity.getOrCreateChildByLabel("cameraAttachPoint")
       .addComponent(this.camera);
@@ -335,14 +346,18 @@ export class PlayerController extends WorldComponent {
     let distance = Vec3Dist(this.ray.origin, this.block.position);
 
     //place vs break, removes or adds a quarter of a block distance into raycast direction for the hit point
-    let extraDistance = place ? -0.25 : 0.25;
+    // let extraDistance = place ? -0.25 : 0.25;
 
-    let totalDistance = distance + extraDistance;
-    let interpolant = totalDistance / distance;
+    // let totalDistance = distance + extraDistance;
+    // let interpolant = totalDistance / distance;
 
-    //move the hit point backwards or forwards based on hit/break so that it is inside of a block
-    Vec3Lerp(this.block.position, this.ray.origin, this.block.position, interpolant);
+    // //move the hit point backwards or forwards based on hit/break so that it is inside of a block
+    // Vec3Lerp(this.block.position, this.ray.origin, this.block.position, interpolant);
     
+    Vec3MulScalar(this.rayHit?.normal!, 0.25);
+    if (place) Vec3Add(this.block.position, this.rayHit?.normal!);
+    else Vec3Sub(this.block.position, this.rayHit?.normal!);
+
     //clamp coordinates to integers
     Vec3Floor(this.block.position);
 
@@ -352,10 +367,10 @@ export class PlayerController extends WorldComponent {
     this.calcBlockPosition(false);
     this.itemSwingAnim.play("swing");
 
-    Vec3Copy(this.debugEntity.transform.position, this.block.position);
-    setTimeout(()=>{
-      Vec3Set(this.debugEntity.transform.position, 0,0,0);
-    }, 10);
+    // Vec3Copy(this.blockIndicator.transform.position, this.block.position);
+    // setTimeout(()=>{
+    //   Vec3Set(this.blockIndicator.transform.position, 0,0,0);
+    // }, 10);
 
     this.block.type = 0;
     Globals.debugChunk.setBlockData(
@@ -371,10 +386,10 @@ export class PlayerController extends WorldComponent {
     this.calcBlockPosition(true);
     this.itemSwingAnim.play("swing");
 
-    Vec3Copy(this.debugEntity.transform.position, this.block.position);
-    setTimeout(()=>{
-      Vec3Set(this.debugEntity.transform.position, 0,0,0);
-    }, 10);
+    // Vec3Copy(this.blockIndicator.transform.position, this.block.position);
+    // setTimeout(()=>{
+    //   Vec3Set(this.blockIndicator.transform.position, 0,0,0);
+    // }, 10);
     
     this.block.type = 1;
     Globals.debugChunk.setBlockData(

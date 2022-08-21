@@ -89,3 +89,8 @@ export function Vec3Dist(a, b) {
   let z = b.z - a.z;
   return Math.sqrt(x * x + y * y + z * z);
 }
+export function Vec3MulScalar(a, scalar) {
+  a.x *= scalar;
+  a.y *= scalar;
+  a.z *= scalar;
+}

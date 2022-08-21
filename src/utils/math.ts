@@ -101,3 +101,8 @@ export function Vec3Dist (a: Vec3Like, b: Vec3Like): number {
       z * z
     );
 }
+export function Vec3MulScalar (a: Vec3Like, scalar: number) {
+  a.x *= scalar;
+  a.y *= scalar;
+  a.z *= scalar;
+}

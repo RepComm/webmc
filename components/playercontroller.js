@@ -6,14 +6,15 @@ import { Globals } from "../utils/global.js";
 import { SphereCollider } from "./spherecollider.js";
 import { Player } from "./player.js";
 import { RigidBody } from "./rigidbody.js";
-import { WorldComponent } from "./worldcomponent.js";
-import { DebugEntity } from "../entities/debugentity.js";
+import { WorldComponent } from "./worldcomponent.js"; // import { DebugEntity } from "../entities/debugentity.js";
+
 import { Block } from "../voxel/block.js";
 import { FlatTexMesh } from "./flattexmesh.js";
 import { Vec3Animator } from "../utils/animators.js";
 import { Camera } from "./camera.js";
-import { lerp, Vec3Add, Vec3ApplyQuaternion, Vec3Copy, Vec3Dist, Vec3Floor, Vec3Lerp, Vec3Set } from "../utils/math.js";
+import { lerp, Vec3Add, Vec3ApplyQuaternion, Vec3Copy, Vec3Dist, Vec3Floor, Vec3MulScalar, Vec3Set, Vec3Sub } from "../utils/math.js";
 import { Timer } from "../utils/timer.js";
+import { BoxWire } from "./boxwire.js";
 export class PlayerController extends WorldComponent {
   constructor() {
     super();
@@ -71,6 +72,10 @@ export class PlayerController extends WorldComponent {
         // this.detectBlockFocus();
 
         if (this.detectBlockRaycast()) {
+          //move indicator
+          this.calcBlockPosition(false);
+          Vec3Copy(this.blockIndicator.transform.position, this.block.position); //try to break/place
+
           if (this.canBreak()) this.break();else if (this.canPlace()) this.place();
         } // Vec3Copy(this.debugEntity.transform.position, this.block.position);
 
@@ -99,8 +104,11 @@ export class PlayerController extends WorldComponent {
   }
 
   onAttach() {
-    this.debugEntity = new DebugEntity();
-    this.debugEntity.setActive(true);
+    this.blockIndicator = new WorldEntity("block indicator");
+    this.blockIndicator.getOrCreateComponent(BoxWire);
+    this.blockIndicator.setParent(Globals.scene); // this.blockIndicator = new DebugEntity();
+    // this.blockIndicator.setActive(true);
+
     this.cameraEntity = this.entity.getOrCreateChildByLabel("cameraAttachPoint").addComponent(this.camera);
     this.cameraEntity.transform.position.set(0, 1.5, 0);
     this.camera.setMainCamera();
@@ -211,14 +219,18 @@ export class PlayerController extends WorldComponent {
   }
 
   calcBlockPosition(place) {
+    var _this$rayHit, _this$rayHit2, _this$rayHit3;
+
     Vec3Copy(this.block.position, this.rayHitPoint);
     let distance = Vec3Dist(this.ray.origin, this.block.position); //place vs break, removes or adds a quarter of a block distance into raycast direction for the hit point
+    // let extraDistance = place ? -0.25 : 0.25;
+    // let totalDistance = distance + extraDistance;
+    // let interpolant = totalDistance / distance;
+    // //move the hit point backwards or forwards based on hit/break so that it is inside of a block
+    // Vec3Lerp(this.block.position, this.ray.origin, this.block.position, interpolant);
 
-    let extraDistance = place ? -0.25 : 0.25;
-    let totalDistance = distance + extraDistance;
-    let interpolant = totalDistance / distance; //move the hit point backwards or forwards based on hit/break so that it is inside of a block
-
-    Vec3Lerp(this.block.position, this.ray.origin, this.block.position, interpolant); //clamp coordinates to integers
+    Vec3MulScalar((_this$rayHit = this.rayHit) === null || _this$rayHit === void 0 ? void 0 : _this$rayHit.normal, 0.25);
+    if (place) Vec3Add(this.block.position, (_this$rayHit2 = this.rayHit) === null || _this$rayHit2 === void 0 ? void 0 : _this$rayHit2.normal);else Vec3Sub(this.block.position, (_this$rayHit3 = this.rayHit) === null || _this$rayHit3 === void 0 ? void 0 : _this$rayHit3.normal); //clamp coordinates to integers
 
     Vec3Floor(this.block.position);
     return this;
@@ -226,22 +238,22 @@ export class PlayerController extends WorldComponent {
 
   break() {
     this.calcBlockPosition(false);
-    this.itemSwingAnim.play("swing");
-    Vec3Copy(this.debugEntity.transform.position, this.block.position);
-    setTimeout(() => {
-      Vec3Set(this.debugEntity.transform.position, 0, 0, 0);
-    }, 10);
+    this.itemSwingAnim.play("swing"); // Vec3Copy(this.blockIndicator.transform.position, this.block.position);
+    // setTimeout(()=>{
+    //   Vec3Set(this.blockIndicator.transform.position, 0,0,0);
+    // }, 10);
+
     this.block.type = 0;
     Globals.debugChunk.setBlockData(this.block, this.block.position.x, this.block.position.y, this.block.position.z, true);
   }
 
   place() {
     this.calcBlockPosition(true);
-    this.itemSwingAnim.play("swing");
-    Vec3Copy(this.debugEntity.transform.position, this.block.position);
-    setTimeout(() => {
-      Vec3Set(this.debugEntity.transform.position, 0, 0, 0);
-    }, 10);
+    this.itemSwingAnim.play("swing"); // Vec3Copy(this.blockIndicator.transform.position, this.block.position);
+    // setTimeout(()=>{
+    //   Vec3Set(this.blockIndicator.transform.position, 0,0,0);
+    // }, 10);
+
     this.block.type = 1;
     Globals.debugChunk.setBlockData(this.block, this.block.position.x, this.block.position.y, this.block.position.z, true);
   }

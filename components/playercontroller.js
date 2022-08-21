@@ -19,7 +19,7 @@ export class PlayerController extends WorldComponent {
   constructor() {
     super();
     this.movement = new Vec3();
-    this.speed = 1;
+    this.speed = 0.8;
     this.lookSensitivity = 0.25;
     this.input = GameInput.get();
     this.jumpForce = 10;
@@ -40,15 +40,17 @@ export class PlayerController extends WorldComponent {
 
     this.block = new Block();
     this.itemSwingAnim = new Vec3Animator().createClip({
-      durationMillis: 100,
+      durationMillis: 175,
       start: 0,
       end: 1,
       fps: 30,
       loop: false,
       name: "swing"
     }).setValueAtTime(0, Math.PI, -1, Math.PI).setValueAtTime(0.5, Math.PI, -1, Math.PI - 1).setValueAtTime(1, Math.PI, -1, Math.PI);
-    let jogLeftMost = 0.8;
-    let jogRightMost = 1.5;
+    let jogLeftMost = 0.55;
+    let jogRightMost = 0.85;
+    let jogTopMost = -0.5;
+    let jogBottomMost = jogTopMost - 0.2;
     this.itemJogAnim = new Vec3Animator().createClip({
       durationMillis: 700,
       start: 0,
@@ -56,7 +58,7 @@ export class PlayerController extends WorldComponent {
       fps: 30,
       loop: false,
       name: "jog"
-    }).setValueAtTime(0, jogLeftMost, 0, -1).setValueAtTime(1, lerp(jogLeftMost, jogRightMost, 0.5), -0.3, -1).setValueAtTime(2, jogRightMost, 0, -1).setValueAtTime(3, lerp(jogLeftMost, jogRightMost, 0.5), -0.3, -1).setValueAtTime(4, jogLeftMost, 0, -1);
+    }).setValueAtTime(0, jogLeftMost, jogTopMost, -1).setValueAtTime(1, lerp(jogLeftMost, jogRightMost, 0.5), jogBottomMost, -1).setValueAtTime(2, jogRightMost, jogTopMost, -1).setValueAtTime(3, lerp(jogLeftMost, jogRightMost, 0.5), jogBottomMost, -1).setValueAtTime(4, jogLeftMost, jogTopMost, -1);
 
     this.onUpdate = () => {
       if (!this.rb) return; //update whether we're on the ground
@@ -89,15 +91,16 @@ export class PlayerController extends WorldComponent {
       let strafe = this.input.getAxisValue("strafe");
 
       if (Math.abs(fwd) < 0.5 && Math.abs(strafe) < 0.5) {
-        this.movement.z = -this.rb.velocity.z * 0.1;
-        this.movement.x = -this.rb.velocity.x * 0.1;
+        this.movement.y = 0;
+        this.movement.z = -this.rb.velocity.z * 0.3;
+        this.movement.x = -this.rb.velocity.x * 0.3;
         this.rb.applyImpulse(this.movement);
         if (this.itemJogAnim.isPlaying) this.itemJogAnim.stop();
       } else {
         if (!this.itemJogAnim.isPlaying) this.itemJogAnim.play("jog");
       }
 
-      this.movement.set(strafe, 0, fwd).applyQuaternion(this.entity.transform.quaternion).normalize().multiply(this.speed);
+      this.movement.set(strafe, 0, fwd).applyQuaternion(this.entity.transform.quaternion).normalize().multiply(this.isOnGround ? this.speed : this.speed / 4);
       this.rb.applyImpulse(this.movement, true);
       if (this.canJump()) this.jump();
     };
@@ -115,7 +118,8 @@ export class PlayerController extends WorldComponent {
     const itemMesher = new FlatTexMesh();
     itemMesher.setImage("./textures/item_pickaxe.png").then(() => {
       const pickaxe = new WorldEntity().setLabel("Pickaxe").addComponent(itemMesher).setParent(this.cameraEntity);
-      pickaxe.transform.position.set(1.5, 0, -1);
+      pickaxe.transform.scale.set(0.5, 0.5, 0.5);
+      pickaxe.transform.position.set(1.0, -0.35, -1);
       pickaxe.transform.rotation.set(Math.PI, -1, Math.PI);
       this.itemSwingAnim.setTarget(pickaxe.transform.rotation);
       this.itemJogAnim.setTarget(pickaxe.transform.position);
@@ -123,7 +127,7 @@ export class PlayerController extends WorldComponent {
     this.player = this.getComponent(Player); //playercontroller is added by Player, so Player should exist. otherwise error
 
     this.transform.position.y = 10;
-    this.rb = this.getOrCreateComponent(RigidBody).setEnabledRotations(false, false, false, true).setLinearDamping(1);
+    this.rb = this.getOrCreateComponent(RigidBody).setEnabledRotations(false, false, false, true).setLinearDamping(0);
     this.col = new SphereCollider(0.4);
     this.entity.addComponent(this.col);
     this.col.setFriction(0);

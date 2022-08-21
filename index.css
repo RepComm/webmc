@@ -72,3 +72,28 @@ body {
 .scenegraph-node-components {
 	color: #8acdec !important;
 }
+#hud {
+	flex-direction: column;
+	background-color: transparent;
+	position:absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+#hotbar {
+	position:absolute;
+	bottom: 1em;
+	left: 20%;
+	width: 60%;
+	height: calc(60vw / 9);
+	background-color: #32323230;
+}
+.item-view {
+	border-width: 2px;
+	border-style: solid;
+	border-color: #727272;
+}
+.item-view-img {
+	image-rendering: pixelated;
+}

@@ -215,11 +215,19 @@ export class Chunk extends WorldComponent {
       for (let y = 0; y < Chunk.BLOCK_SIDE_LENGTH; y++) {
         for (let z = 0; z < Chunk.BLOCK_SIDE_LENGTH; z++) {
           let i = Chunk.positionToIndex(x, y, z);
-          if (x >= y) {
+
+          if (y === 1) {
+            this.data[i] = 1;
+          } else if (y === 2) {
             this.data[i] = Math.floor(Math.random() * types)+1;
           } else {
             this.data[i] = 0;
           }
+          // if (x >= y) {
+          //   this.data[i] = Math.floor(Math.random() * types)+1;
+          // } else {
+          //   this.data[i] = 0;
+          // }
         }
       }
     }

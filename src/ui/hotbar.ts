@@ -11,7 +11,9 @@ export class ItemView extends Panel {
   constructor () {
     super();
     this.addClasses("item-view");
-    this.img = new ImagePanel();
+    this.img = new ImagePanel()
+    .addClasses("item-view-img")
+    .mount(this);
   }
   setItem (item: ItemDef): this {
     this.img.setImage(item.frameImageUrl);

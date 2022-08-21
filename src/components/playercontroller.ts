@@ -53,7 +53,7 @@ export class PlayerController extends WorldComponent {
   constructor() {
     super();
     this.movement = new Vec3();
-    this.speed = 0.8;
+    this.speed = 0.5;
     this.lookSensitivity = 0.25;
     this.input = GameInput.get();
 

@@ -10,6 +10,7 @@ import { SceneGraph } from "./ui/scenegraph.js";
 import { Globals } from "./utils/global.js";
 import { AtlasBuilder } from "./utils/atlas.js";
 import { BlockTextureSlot, BlockType } from "./voxel/blockdef.js";
+import { Hotbar } from "./ui/hotbar.js";
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
 
@@ -41,10 +42,19 @@ async function main() {
   const btnPlay = new MCBTN().setTextContent("Play").mount(btns);
   const btnSettings = new MCBTN().setTextContent("Settings").mount(btns);
   const btnAbout = new MCBTN().setTextContent("About").mount(btns);
+  const hud = new Panel().setId("hud");
+  const hotbar = new Hotbar().setId("hotbar").mount(hud);
+  hotbar.items[0].setItem({
+    frameImageUrl: "./textures/item_pickaxe.png"
+  });
+  hotbar.items[1].setItem({
+    frameImageUrl: "./textures/all_stone.png"
+  });
   btnPlay.on("click", () => {
-    btns.unmount();
-    container.mountChild(sceneGraphDisplay);
+    btns.unmount(); // container.mountChild(sceneGraphDisplay);
+
     container.mountChild(gl.canvas);
+    container.mountChild(hud);
   });
   const sceneGraphDisplay = new SceneGraph(); // .mount(container);
 

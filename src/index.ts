@@ -1,20 +1,18 @@
 
-import RAPIER, { World } from "@dimforge/rapier3d-compat";
+import RAPIER from "@dimforge/rapier3d-compat";
 
 import { EXPONENT_CSS_BODY_STYLES, EXPONENT_CSS_STYLES, Panel, Text } from "@repcomm/exponent-ts";
-import { Camera, Renderer, Vec2 } from "ogl-typescript";
+import { Renderer, Vec2 } from "ogl-typescript";
 import { AudioPlayer } from "./audio/audioplayer.js";
 import { Chunk } from "./components/chunk.js";
 import { Player } from "./components/player.js";
 import { WorldEntity } from "./entities/worldentity.js";
+import { Hotbar } from "./ui/hotbar.js";
 import { MCBTN } from "./ui/mcbtn.js";
 import { SceneGraph } from "./ui/scenegraph.js";
-import { Globals } from "./utils/global.js";
 import { AtlasBuilder } from "./utils/atlas.js";
+import { Globals } from "./utils/global.js";
 import { BlockTextureSlot, BlockType } from "./voxel/blockdef.js";
-import { PlayerController } from "./components/playercontroller.js";
-import { FlatTexMesh } from "./components/flattexmesh.js";
-import { Hotbar } from "./ui/hotbar.js";
 
 EXPONENT_CSS_STYLES.mount(document.head);
 EXPONENT_CSS_BODY_STYLES.mount(document.head);
@@ -147,9 +145,11 @@ async function main() {
   // chunk.transform.position.set(-Chunk.BLOCK_SIDE_LENGTH / 2);
 
   const player = new WorldEntity();
-  player.transform.position.x = Chunk.BLOCK_SIDE_LENGTH/2;
-  player.transform.position.y = Chunk.BLOCK_SIDE_LENGTH;
-  player.transform.position.z = Chunk.BLOCK_SIDE_LENGTH/2;
+  player.transform.position.set(
+    Chunk.BLOCK_SIDE_LENGTH/2,
+    Chunk.BLOCK_SIDE_LENGTH,
+    Chunk.BLOCK_SIDE_LENGTH/2
+  );
 
   player.addComponent(new Player())
   .setParent(Globals.scene)

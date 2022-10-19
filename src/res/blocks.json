@@ -1,0 +1,27 @@
+{
+  "blocks": [
+    {
+      "id": "block_grass",
+      "displayName": "Grass",
+      "textures": {
+        "sides": "./textures/side_grass.png",
+        "top": "./textures/top_grass.png",
+        "bottom": "./textures/all_dirt.png"
+      }
+    },
+    {
+      "id": "block_dirt",
+      "displayName": "Dirt",
+      "textures": {
+        "all": "./textures/all_dirt.png"
+      }
+    },
+    {
+      "id": "block_stone",
+      "displayName": "Stone",
+      "textures": {
+        "all": "./textures/all_stone.png"
+      }
+    }
+  ]
+}

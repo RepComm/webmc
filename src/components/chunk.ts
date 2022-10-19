@@ -11,6 +11,7 @@ import { MeshCollider } from "./meshcollider.js";
 import { RigidBody, RigidBodyType } from "./rigidbody.js";
 import { WorldComponent } from "./worldcomponent.js";
 import { Vec3Animator } from "../utils/animators.js";
+import { BFSResultMode, BFSSeedMode, ChunkData } from "../voxel/chunkdata.js";
 
 export interface ChunkLoadAnim {
   startTime: number;
@@ -42,8 +43,35 @@ export class Chunk extends WorldComponent {
 
   animTrack: Vec3Animator;
 
+  chunkData: ChunkData;
+
   constructor() {
     super();
+
+    //create a chunk data structure
+    this.chunkData = new ChunkData({
+      blockByteLength: 1,
+      sideLength: Chunk.BLOCK_SIDE_LENGTH
+    });
+
+    //breadth first search for blocks neighboring blocks where first block byte is a 0
+    let blocks = this.chunkData.bfs({
+      //how to start searching
+      seedMode: BFSSeedMode.CALLBACK,
+      seedCallback: (info)=>{
+
+        //only start with blocks where block's first byte is 0
+        return (info.blockData[0] === 0);
+      },
+      
+      //how to see if we should visit a neighbor
+      shouldVisitCallback: (info)=>{
+
+        //only visit neighbor blocks where block's first byte is 0
+        return (info.blockData[0] == 0)
+      }
+    });
+
     this.data = new Uint8Array(Chunk.DATA_SIZE);
     this.renderBlock = new Block();
     this.neighborBlock = new Block();
